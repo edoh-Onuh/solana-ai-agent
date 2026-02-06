@@ -771,7 +771,8 @@ NODE_ENV=production
 ## 🎬 Demo
 
 ### Live Demo
-**URL**: [Coming Soon - Deploy to Vercel]
+**URL**: https://solana-ai-agent.vercel.app
+*Autonomous AI agent monitoring Solana validators with real-time recommendations*
 
 ### Video Demo
 **YouTube**: [3-minute walkthrough - Coming Soon]
