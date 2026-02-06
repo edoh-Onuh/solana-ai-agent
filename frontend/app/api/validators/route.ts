@@ -45,8 +45,8 @@ async function tryFetchValidators(): Promise<ValidatorMetrics[]> {
           delinquent: voteAccounts.delinquent.some(d => d.votePubkey === v.votePubkey),
           lastUpdated: Date.now(),
         } as ValidatorMetrics))
-        .sort((a, b) => b.activatedStake - a.activatedStake)
-        .slice(0, 100);
+        .sort((a, b) => b.activatedStake - a.activatedStake);
+        // Removed .slice(0, 100) to return ALL validators
       
       return validators;
     } catch (error) {

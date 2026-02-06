@@ -102,6 +102,12 @@ An **autonomous AI agent** that bridges the gap between data and decisions:
 ✅ Impact visualization before voting
 ```
 
+**For Production:**
+- Database (PostgreSQL/Supabase) to store votes
+- Wallet authentication (Solana wallet adapter)
+- On-chain voting with smart contract
+- Multi-sig governance for protocols
+
 ### 4. **Comprehensive Analytics**
 ```
 ✅ Nakamoto Coefficient tracking
