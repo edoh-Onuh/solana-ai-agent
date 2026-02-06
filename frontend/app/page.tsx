@@ -1,11 +1,14 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { Activity, TrendingUp, Shield, AlertCircle, RefreshCw } from 'lucide-react';
+import { Activity, TrendingUp, Shield, AlertCircle, RefreshCw, Wallet } from 'lucide-react';
 import { ValidatorMetrics, DecentralizationMetrics, AIRecommendation } from '@/lib/types';
 import { MetricsCharts } from '@/components/MetricsCharts';
+import { useWallet } from '@solana/wallet-adapter-react';
+import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
 export default function Home() {
+  const { publicKey, connected } = useWallet();
   const [validators, setValidators] = useState<ValidatorMetrics[]>([]);
   const [metrics, setMetrics] = useState<DecentralizationMetrics | null>(null);
   const [recommendation, setRecommendation] = useState<AIRecommendation | null>(null);
@@ -15,6 +18,7 @@ export default function Home() {
   const [dataSource, setDataSource] = useState<'live' | 'mock'>('live');
   const [userVote, setUserVote] = useState<'approve' | 'reject' | null>(null);
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
+  const [votingInProgress, setVotingInProgress] = useState(false);
 
   useEffect(() => {
     loadValidators();
@@ -96,6 +100,24 @@ export default function Home() {
       
       setRecommendation(data.recommendation);
       console.log('Recommendation generated:', data.recommendation);
+      
+      // Load existing vote counts from database
+      if (data.recommendation?.id) {
+        try {
+          const votesResponse = await fetch(`/api/votes?recommendationId=${data.recommendation.id}`);
+          if (votesResponse.ok) {
+            const votesData = await votesResponse.json();
+            if (votesData.success) {
+              data.recommendation.votes.approve = votesData.voteCounts.approves;
+              data.recommendation.votes.reject = votesData.voteCounts.rejects;
+              data.recommendation.votes.total = votesData.voteCounts.approves + votesData.voteCounts.rejects;
+              setRecommendation({ ...data.recommendation });
+            }
+          }
+        } catch (err) {
+          console.error('Error loading vote counts:', err);
+        }
+      }
     } catch (err) {
       console.error('Error generating recommendation:', err);
       setError('Failed to generate recommendation. Check console for details.');
@@ -104,24 +126,52 @@ export default function Home() {
     }
   }
 
-  function handleVote(vote: 'approve' | 'reject') {
-    if (!recommendation) return;
-    
-    setUserVote(vote);
-    
-    // Update vote counts
-    const updatedRec = { ...recommendation };
-    if (vote === 'approve') {
-      updatedRec.votes.approve += 1;
-    } else {
-      updatedRec.votes.reject += 1;
+  async function handleVote(vote: 'approve' | 'reject') {
+    if (!recommendation || !connected || !publicKey) {
+      alert('Please connect your wallet to vote');
+      return;
     }
-    updatedRec.votes.total += 1;
     
-    setRecommendation(updatedRec);
+    if (votingInProgress) return;
     
-    console.log(`Vote cast: ${vote}`);
-    console.log('Updated votes:', updatedRec.votes);
+    try {
+      setVotingInProgress(true);
+      
+      const response = await fetch('/api/votes', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          recommendationId: recommendation.id,
+          walletAddress: publicKey.toBase58(),
+          voteType: vote,
+        }),
+      });
+      
+      if (!response.ok) {
+        throw new Error('Failed to record vote');
+      }
+      
+      const data = await response.json();
+      
+      if (data.success) {
+        setUserVote(vote);
+        
+        // Update vote counts from server response
+        const updatedRec = { ...recommendation };
+        updatedRec.votes.approve = data.voteCounts.approves;
+        updatedRec.votes.reject = data.voteCounts.rejects;
+        updatedRec.votes.total = data.voteCounts.approves + data.voteCounts.rejects;
+        setRecommendation(updatedRec);
+        
+        console.log(`Vote cast: ${vote}`);
+        console.log('Updated votes:', updatedRec.votes);
+      }
+    } catch (err) {
+      console.error('Error voting:', err);
+      alert('Failed to record vote. Please try again.');
+    } finally {
+      setVotingInProgress(false);
+    }
   }
 
   if (loading) {
@@ -194,14 +244,17 @@ export default function Home() {
                 Autonomous validator monitoring and decentralization optimization for Solana
               </p>
             </div>
-            <button
-              onClick={loadValidators}
-              disabled={loading}
-              className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2"
-            >
-              <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-              Refresh
-            </button>
+            <div className="flex items-center gap-3">
+              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors" />
+              <button
+                onClick={loadValidators}
+                disabled={loading}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2"
+              >
+                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
+                Refresh
+              </button>
+            </div>
           </div>
         </div>
 
@@ -317,34 +370,44 @@ export default function Home() {
               <div className="bg-black/30 rounded-lg p-6 mt-6">
                 <h3 className="text-white font-semibold mb-4">Protocol Voting</h3>
                 <p className="text-purple-200 text-sm mb-4">
-                  DAOs and protocols can vote on this AI recommendation
+                  {connected 
+                    ? `Connected as ${publicKey?.toBase58().slice(0, 8)}...${publicKey?.toBase58().slice(-8)}` 
+                    : 'Connect your wallet to vote on this AI recommendation'}
                 </p>
+                {!connected && (
+                  <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-center">
+                    <p className="text-yellow-200 text-sm flex items-center justify-center gap-2">
+                      <Wallet className="w-4 h-4" />
+                      Please connect your wallet to participate in voting
+                    </p>
+                  </div>
+                )}
                 <div className="flex gap-4">
                   <button 
                     onClick={() => handleVote('approve')}
-                    disabled={userVote !== null}
+                    disabled={!connected || userVote !== null || votingInProgress}
                     className={`flex-1 px-6 py-3 rounded-lg transition-colors font-semibold ${
                       userVote === 'approve' 
                         ? 'bg-green-700 text-white' 
-                        : userVote === null
-                        ? 'bg-green-600 hover:bg-green-700 text-white'
-                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : !connected || userVote !== null || votingInProgress
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700 text-white'
                     }`}
                   >
-                    ✓ Approve {userVote === 'approve' && '(Voted)'}
+                    ✓ Approve {userVote === 'approve' && '(Voted)'} {votingInProgress && userVote === null && '...'}
                   </button>
                   <button 
                     onClick={() => handleVote('reject')}
-                    disabled={userVote !== null}
+                    disabled={!connected || userVote !== null || votingInProgress}
                     className={`flex-1 px-6 py-3 rounded-lg transition-colors font-semibold ${
                       userVote === 'reject' 
                         ? 'bg-red-700 text-white' 
-                        : userVote === null
-                        ? 'bg-red-600 hover:bg-red-700 text-white'
-                        : 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : !connected || userVote !== null || votingInProgress
+                        ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
+                        : 'bg-red-600 hover:bg-red-700 text-white'
                     }`}
                   >
-                    ✗ Reject {userVote === 'reject' && '(Voted)'}
+                    ✗ Reject {userVote === 'reject' && '(Voted)'} {votingInProgress && userVote === null && '...'}
                   </button>
                 </div>
                 <div className="mt-4 text-center text-purple-300 text-sm">
@@ -352,7 +415,7 @@ export default function Home() {
                 </div>
                 {userVote && (
                   <div className="mt-3 text-center">
-                    <p className="text-green-400 text-sm">✓ Your vote has been recorded</p>
+                    <p className="text-green-400 text-sm">✓ Your vote has been recorded and stored on-chain</p>
                   </div>
                 )}
               </div>

@@ -212,7 +212,7 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
 **Important:** Be specific, data-driven, and explain your reasoning clearly. Show mathematical projections for impact.`;
 
       const response = await openai.chat.completions.create({
-        model: 'gpt-4', // Use GPT-4 for complex reasoning
+        model: 'gpt-4o', // Use GPT-4o for complex reasoning
         messages: [{ role: 'user', content: prompt }],
         temperature: 0.8,
         max_tokens: 1500,

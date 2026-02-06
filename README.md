@@ -5,10 +5,15 @@
 [![Colosseum Hackathon](https://img.shields.io/badge/Colosseum-AI%20Agent-purple)](https://colosseum.org)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
 [![TypeScript](https://img.shields.io/badge/TypeScript-5-blue)](https://www.typescriptlang.org/)
-[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4-green)](https://openai.com/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-GPT--4o-green)](https://openai.com/)
 [![Solana](https://img.shields.io/badge/Solana-Mainnet-blueviolet)](https://solana.com/)
+[![Supabase](https://img.shields.io/badge/Supabase-Database-green)](https://supabase.com/)
 
 **🏆 Colosseum AI Agent Hackathon Submission | Deadline: February 12, 2026**
+
+**🚀 Live Demo:** [https://solana-ai-agent.vercel.app](https://solana-ai-agent.vercel.app)
+
+**📧 Contact:** @adanubrown (Twitter) | adanu1947@gmail.com
 
 ---
 
@@ -56,14 +61,15 @@ An **autonomous AI agent** that bridges the gap between data and decisions:
 ### 🤖 AI-Powered Intelligence
 - Continuously monitors all 3,000+ Solana validators in real-time
 - Analyzes performance, decentralization metrics, and network health
-- Generates optimized stake delegation recommendations using GPT-4
+- Generates optimized stake delegation recommendations using GPT-4o
 - Provides transparent reasoning for every recommendation
 
-### 🗳️ Human-in-the-Loop Governance
-- Protocols and DAOs review AI recommendations through voting interface
-- Approve or reject proposals with full transparency
-- Democratic decision-making backed by AI insights
-- Hybrid model: AI efficiency + human judgment
+### 🗳️ Production-Ready Voting System
+- **Solana Wallet Authentication**: Connect with Phantom, Solflare, Torus, Ledger
+- **Database Persistence**: Votes stored in Supabase PostgreSQL
+- **One Vote Per Wallet**: Enforced uniqueness constraint per recommendation
+- **Real-time Vote Tracking**: Live vote counts and aggregation
+- **Democratic Governance**: Protocols and DAOs review and approve/reject recommendations
 
 ### 📊 Data-Driven Optimization
 - Multi-criteria scoring: performance, geography, client diversity, stake concentration
@@ -86,29 +92,29 @@ An **autonomous AI agent** that bridges the gap between data and decisions:
 
 ### 2. **AI-Powered Recommendation Engine**
 ```
-✅ OpenAI GPT-4 integration with sophisticated prompting
+✅ OpenAI GPT-4o integration with sophisticated prompting
 ✅ Multi-criteria optimization algorithm
 ✅ Transparent reasoning: "Why this validator?"
 ✅ Rule-based fallback for reliability
 ✅ Confidence scores for each recommendation
 ```
 
-### 3. **Human Voting Interface**
+### 3. **Production Wallet Authentication & Voting**
+```
+✅ Solana Wallet Adapter (Phantom, Solflare, Torus, Ledger)
+✅ Supabase PostgreSQL database for vote persistence
+✅ One vote per wallet per recommendation (enforced uniqueness)
+✅ Real-time vote counts from database
+✅ Wallet address authentication and verification
+✅ Vote history tracking and analytics
+```
+
+### 4. **Human Voting Interface**
 ```
 ✅ Clean, intuitive dashboard for protocols/DAOs
+✅ Wallet connect button with multi-wallet support
 ✅ Approve/Reject voting with one click
-✅ Real-time vote tracking and aggregation
-✅ Historical voting records
-✅ Impact visualization before voting
-```
-
-**For Production:**
-- Database (PostgreSQL/Supabase) to store votes
-- Wallet authentication (Solana wallet adapter)
-- On-chain voting with smart contract
-- Multi-sig governance for protocols
-
-### 4. **Comprehensive Analytics**
+✅ Re5. **Comprehensive Analytics**
 ```
 ✅ Nakamoto Coefficient tracking
 ✅ Stake concentration charts (top 10/20/50 validators)
@@ -117,7 +123,17 @@ An **autonomous AI agent** that bridges the gap between data and decisions:
 ✅ Performance metrics dashboard
 ```
 
-### 5. **Production-Ready Reliability**
+### 6. **Production-Ready Infrastructure**
+```
+✅ Server-side API key management (secure)
+✅ Graceful error handling and retry logic
+✅ Multi-RPC failover strategy
+✅ Database-backed vote persistence
+✅ Wallet authentication and authorization
+✅ Mock data fallback for demos
+✅ Responsive design (mobile-ready)
+✅ Loading states and smooth animations
+✅ Deployed on Vercel with environment variableability**
 ```
 ✅ Server-side API key management (secure)
 ✅ Graceful error handling
@@ -345,25 +361,53 @@ OPENAI_API_KEY=sk-proj-your_key_here
 # Solana RPC Endpoints (Server-side)
 SOLANA_RPC_URL=https://solana-mainnet.g.alchemy.com/v2/demo
 
-# Solana RPC (Client-side, optional)
+# Solana RPC (Client-side)
 NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+
+# Supabase Configuration (REQUIRED for voting)
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
-5. **Run development server**
+5. **Set up Supabase database**
+
+a. Create a Supabase project at [https://supabase.com](https://supabase.com)
+
+b. In SQL Editor, run this SQL to create the votes table:
+```sql
+CREATE TABLE votes (
+  id UUID DEFAULT gen_random_uuid() PRIMARY KEY,
+  recommendation_id TEXT NOT NULL,
+  wallet_address TEXT NOT NULL,
+  vote_type TEXT NOT NULL CHECK (vote_type IN ('approve', 'reject')),
+  created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
+  UNIQUE(recommendation_id, wallet_address)
+);
+
+CREATE INDEX idx_votes_recommendation ON votes(recommendation_id);
+CREATE INDEX idx_votes_wallet ON votes(wallet_address);
+```
+
+c. Copy your Project URL and anon/public key to `.env.local`
+
+6. **Run development server**
 ```bash
 npm run dev
 ```
 
-6. **Open browser**
+7. **Open browser**
 Navigate to [http://localhost:3000](http://localhost:3000)
 
 ### Verify Installation
 
 After starting the server, you should see:
 - ✅ Dashboard loads with validator metrics
+- ✅ "Select Wallet" button appears in top-right
 - ✅ "Generate AI Recommendation" button is active
 - ✅ Configuration status shows "OpenAI: Configured ✅"
-- ✅ Validator data loads (live or mock)
+- ✅ Validator data loads from Solana mainnet
+- ✅ Wallet connection works (Phantom/Solflare/etc)
+- ✅ Voting buttons become enabled after connecting wallet
 
 ---
 
@@ -371,28 +415,60 @@ After starting the server, you should see:
 
 ### For Protocol/DAO Decision Makers
 
-#### 1. **View Network Health**
+#### 1. **Connect Your Wallet**
+```
+Click "Select Wallet" button in top-right
+→ Choose your wallet (Phantom, Solflare, Torus, Ledger)
+→ Approve connection in wallet popup
+→ Your wallet address appears (e.g., "7Nax...2kH4")
+```
+
+#### 2. **View Network Health**
 ```
 Dashboard shows:
-• Nakamoto Coefficient: 31 (needs improvement)
-• Top 10 stake: 32.5% (too concentrated)
-• Top 20 stake: 44.8%
-• Top 50 stake: 58.2%
-• Geographic diversity: 15 countries, 42 cities
+• Nakamoto Coefficient: 19-31 (current network state)
+• Top 10 stake: ~30-35% (concentration level)
+• Top 20 stake: ~44% 
+• Top 50 stake: ~58%
+• Geographic diversity: 15+ countries, 40+ cities
 • Client mix: 65% Agave, 30% Jito, 5% others
 ```
 
-#### 2. **Generate AI Recommendations**
+#### 3. **Generate AI Recommendation**
 ```
-Click "Generate AI Recommendation" button
+Click "Generate Recommendation" button
 ↓
-Enter target stake amount (e.g., 100,000 SOL)
-↓
-AI analyzes all validators and returns:
-• 15 recommended validators
+AI analyzes 800+ validators in real-time and returns:
+• 10-15 recommended validators
 • Reasoning for each selection
-• Expected impact on metrics
-• Confidence scores
+• Expected impact on metrics (Nakamoto coefficient projection)
+• Confidence scores and risk levels
+```
+
+#### 4. **Review and Vote**
+```
+Review AI recommendations:
+• Validator public keys and names
+• Recommended stake amounts
+• Risk levels (low/medium/high)
+• Detailed reasoning for each selection
+
+Vote with your connected wallet:
+• Click "✓ Approve" to support the recommendation
+• Click "✗ Reject" to reject the recommendation
+• Vote is recorded to Supabase database
+• Real-time vote counts update (approve/reject/total)
+• One vote per wallet per recommendation (enforced)
+```
+
+#### 5. **Track Vote Results**
+```
+See aggregated voting results:
+• Total votes cast
+• Approval vs rejection breakdown
+• Your vote status displayed
+• Vote persists across sessions
+• Historical voting data in database
 ```
 
 #### 3. **Review Recommendations**
