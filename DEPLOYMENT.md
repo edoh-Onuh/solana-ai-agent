@@ -87,11 +87,3 @@ vercel --prod
 
 **Issue:** Solana RPC timeout  
 **Fix:** Expected - gracefully falls back to mock data
-
----
-
-## For Submission
-
-Your live URL will be: `https://[your-project-name].vercel.app`
-
-Use this URL in your Colosseum submission form.

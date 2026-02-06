@@ -917,18 +917,14 @@ With the following conditions:
 
 ## 📞 Contact & Support
 
-- **GitHub Issues**: [Report bugs or request features](https://github.com/YOUR_USERNAME/solana-ai-agent-colosseum/issues)
-- **Twitter**: [@your_handle]
-- **Discord**: Join our community [invite link]
-- **Email**: your.email@example.com
+- **GitHub Issues**: [Report bugs or request features](https://github.com/edoh-Onuh/solana-ai-agent/issues)
+- **Twitter**: [@adanubrown]
+- **Email**: adanu1947@gmail.com
 
 ---
 
 ## 🔗 Links
 
-- [Live Demo](https://your-project.vercel.app) *(Coming Soon)*
-- [Video Walkthrough](https://youtube.com/watch?v=...) *(Coming Soon)*
-- [Pitch Deck](./docs/pitch-deck.pdf) *(Coming Soon)*
 - [Technical Docs](./docs/TECHNICAL.md)
 - [API Reference](./docs/API.md)
 
