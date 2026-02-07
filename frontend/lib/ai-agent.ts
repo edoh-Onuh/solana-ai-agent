@@ -272,12 +272,64 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     currentMetrics: DecentralizationMetrics,
     targetStake: number
   ): AIRecommendation {
-    // Simple strategy: distribute evenly among smallest validators
+    // Improved strategy: select high-quality, underrepresented validators
     const candidates = validators
-      .filter(v => !v.delinquent)
-      .filter(v => v.stakePercentage < 1)
-      .sort((a, b) => a.stakePercentage - b.stakePercentage)
-      .slice(0, 10);
+      .filter(v => !v.delinquent) // Must be active
+      .filter(v => v.activatedStake > 100_000_000_000) // Min 100K SOL (active validators)
+      .filter(v => v.stakePercentage < 1) // Not in top concentrated validators
+      .filter(v => v.stakePercentage > 0.01) // Not too small (meaningful validators)
+      .filter(v => v.commission <= 10) // Reasonable commission
+      .sort((a, b) => {
+        // Sort by multiple factors: lower stake % + higher vote credits
+        const aScore = (1 - a.stakePercentage / 100) * 0.6 + (a.voteCredits / 10000) * 0.4;
+        const bScore = (1 - b.stakePercentage / 100) * 0.6 + (b.voteCredits / 10000) * 0.4;
+        return bScore - aScore;
+      })
+      .slice(0, 15);
+
+    if (candidates.length === 0) {
+      // Emergency fallback: just pick non-delinquent validators
+      const emergencyCandidates = validators
+        .filter(v => !v.delinquent)
+        .sort((a, b) => a.stakePercentage - b.stakePercentage)
+        .slice(0, 10);
+      
+      const stakePerValidator = targetStake / emergencyCandidates.length;
+      const validatorRecs: ValidatorRecommendation[] = emergencyCandidates.map(v => ({
+        pubkey: v.pubkey,
+        name: v.name || 'Unknown',
+        recommendedStake: stakePerValidator,
+        currentStake: v.activatedStake,
+        reason: `Active validator with ${v.stakePercentage.toFixed(3)}% stake concentration`,
+        riskLevel: 'medium' as const,
+        decentralizationScore: 70,
+        performanceScore: 75,
+      }));
+
+      return {
+        id: `rec_${Date.now()}`,
+        timestamp: Date.now(),
+        validators: validatorRecs,
+        reasoning: `Selected ${emergencyCandidates.length} active validators. Note: Limited filtering due to data constraints.`,
+        confidence: 0.6,
+        expectedImpact: {
+          nakamotoCoefficient: {
+            current: currentMetrics.nakamotoCoefficient,
+            projected: currentMetrics.nakamotoCoefficient + 1,
+          },
+          stakeDistribution: {
+            before: `Top 10: ${currentMetrics.topValidatorConcentration.top10Percentage.toFixed(1)}%`,
+            after: 'Reduced by ~0.2%',
+          },
+        },
+        status: 'pending',
+        votes: {
+          approve: 0,
+          reject: 0,
+          total: 0,
+        },
+      };
+    }
 
     const stakePerValidator = targetStake / candidates.length;
 
@@ -286,18 +338,18 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
       name: v.name || 'Unknown',
       recommendedStake: stakePerValidator,
       currentStake: v.activatedStake,
-      reason: `Low stake concentration (${v.stakePercentage.toFixed(3)}%), helps decentralization`,
-      riskLevel: 'low' as const,
-      decentralizationScore: 85,
-      performanceScore: 90,
+      reason: `Strong performance (${v.voteCredits.toLocaleString()} credits), ${v.commission}% commission, ${v.stakePercentage.toFixed(3)}% network stake - excellent decentralization target`,
+      riskLevel: v.stakePercentage < 0.1 ? 'low' as const : v.stakePercentage < 0.5 ? 'medium' as const : 'high' as const,
+      decentralizationScore: Math.round((1 - v.stakePercentage / 100) * 100),
+      performanceScore: Math.min(95, Math.round((v.voteCredits / 1000) * 0.8 + 20)),
     }));
 
     return {
       id: `rec_${Date.now()}`,
       timestamp: Date.now(),
       validators: validatorRecs,
-      reasoning: `Distributing stake evenly among ${candidates.length} underrepresented validators to improve decentralization.`,
-      confidence: 0.75,
+      reasoning: `Selected ${candidates.length} high-quality validators with strong performance metrics (avg commission: ${(candidates.reduce((sum, v) => sum + v.commission, 0) / candidates.length).toFixed(1)}%) and low network stake concentration. These validators have proven track records while helping improve decentralization.`,
+      confidence: 0.82,
       expectedImpact: {
         nakamotoCoefficient: {
           current: currentMetrics.nakamotoCoefficient,

@@ -415,7 +415,7 @@ export default function Home() {
                 </div>
                 {userVote && (
                   <div className="mt-3 text-center">
-                    <p className="text-green-400 text-sm">✓ Your vote has been recorded and stored on-chain</p>
+                    <p className="text-green-400 text-sm">✓ Your vote has been recorded in the database</p>
                   </div>
                 )}
               </div>
