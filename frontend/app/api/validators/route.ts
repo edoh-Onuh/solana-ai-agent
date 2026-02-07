@@ -93,9 +93,9 @@ export async function GET() {
   try {
     console.log('API: Attempting to fetch validators from Solana...');
     
-    // Try to fetch real data with multiple endpoints
+    // Try to fetch real data using solanaClient (includes geo + client data)
     try {
-      const validators = await tryFetchValidators();
+      const validators = await solanaClient.getAllValidators();
       const metrics = solanaClient.calculateDecentralizationMetrics(validators);
       
       console.log('API: Successfully fetched real validator data');
