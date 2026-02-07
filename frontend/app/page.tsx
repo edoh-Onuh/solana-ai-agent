@@ -7,6 +7,13 @@ import { MetricsCharts } from '@/components/MetricsCharts';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 
+interface VoteDisplay {
+  id: string;
+  wallet: string;
+  voteType: 'approve' | 'reject';
+  timestamp: string;
+}
+
 export default function Home() {
   const { publicKey, connected } = useWallet();
   const [validators, setValidators] = useState<ValidatorMetrics[]>([]);
@@ -19,11 +26,67 @@ export default function Home() {
   const [userVote, setUserVote] = useState<'approve' | 'reject' | null>(null);
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
   const [votingInProgress, setVotingInProgress] = useState(false);
+  const [recentVotes, setRecentVotes] = useState<VoteDisplay[]>([]);
 
   useEffect(() => {
     loadValidators();
     checkStatus();
   }, []);
+
+  useEffect(() => {
+    if (!recommendation?.id) return;
+
+    // Load initial recent votes
+    loadRecentVotes(recommendation.id);
+
+    // Set up polling for live updates
+    const interval = setInterval(() => {
+      loadRecentVotes(recommendation.id);
+      updateVoteCounts(recommendation.id);
+    }, 3000); // Update every 3 seconds
+
+    return () => {
+      clearInterval(interval);
+    };
+  }, [recommendation?.id]);
+
+  async function loadRecentVotes(recommendationId: string) {
+    try {
+      const response = await fetch(`/api/votes/recent?recommendationId=${recommendationId}&limit=10`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          console.log(`[${new Date().toLocaleTimeString()}] Loaded ${data.votes.length} votes`);
+          setRecentVotes(data.votes.map((v: any) => ({
+            id: v.id,
+            wallet: v.wallet_address,
+            voteType: v.vote_type,
+            timestamp: v.created_at,
+          })));
+        }
+      }
+    } catch (err) {
+      console.error('Error loading recent votes:', err);
+    }
+  }
+
+  async function updateVoteCounts(recommendationId: string) {
+    try {
+      const response = await fetch(`/api/votes?recommendationId=${recommendationId}`);
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success && recommendation) {
+          const updatedRec = { ...recommendation };
+          updatedRec.votes.approve = data.voteCounts.approves;
+          updatedRec.votes.reject = data.voteCounts.rejects;
+          updatedRec.votes.total = data.voteCounts.approves + data.voteCounts.rejects;
+          setRecommendation(updatedRec);
+        }
+      }
+    } catch (err) {
+      console.error('Error updating vote counts:', err);
+    }
+  }
 
   async function checkStatus() {
     try {
@@ -418,6 +481,48 @@ export default function Home() {
                     <p className="text-green-400 text-sm">✓ Your vote has been recorded in the database</p>
                   </div>
                 )}
+              </div>
+
+              {/* Live Vote Feed */}
+              <div className="bg-black/30 rounded-lg p-6 mt-6">
+                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
+                  <Activity className="w-5 h-5 text-green-400 animate-pulse" />
+                  Live Vote Stream
+                  <span className="ml-auto text-xs text-purple-300 font-normal">Updates every 3s</span>
+                </h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {recentVotes.length === 0 ? (
+                    <p className="text-purple-300 text-sm text-center py-4">No votes yet. Be the first to vote!</p>
+                  ) : (
+                    recentVotes.map((vote) => (
+                      <div 
+                        key={vote.id} 
+                        className="bg-white/5 rounded-lg p-3 flex items-center justify-between hover:bg-white/10 transition-colors"
+                      >
+                        <div className="flex items-center gap-3">
+                          <div className={`w-2 h-2 rounded-full ${
+                            vote.voteType === 'approve' ? 'bg-green-400' : 'bg-red-400'
+                          }`} />
+                          <div>
+                            <div className="text-white text-sm font-mono">
+                              {vote.wallet.slice(0, 4)}...{vote.wallet.slice(-4)}
+                            </div>
+                            <div className="text-purple-300 text-xs">
+                              {new Date(vote.timestamp).toLocaleTimeString()}
+                            </div>
+                          </div>
+                        </div>
+                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                          vote.voteType === 'approve' 
+                            ? 'bg-green-500/20 text-green-400' 
+                            : 'bg-red-500/20 text-red-400'
+                        }`}>
+                          {vote.voteType === 'approve' ? '✓ Approved' : '✗ Rejected'}
+                        </div>
+                      </div>
+                    ))
+                  )}
+                </div>
               </div>
             </div>
           ) : (

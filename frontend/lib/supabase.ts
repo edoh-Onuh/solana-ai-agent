@@ -81,3 +81,23 @@ export async function getUserVote(
 
   return data.vote_type as 'approve' | 'reject';
 }
+
+export async function getRecentVotes(
+  recommendationId: string,
+  limit: number = 10
+): Promise<Vote[]> {
+  const { data, error } = await supabase
+    .from('votes')
+    .select('*')
+    .eq('recommendation_id', recommendationId)
+    .order('created_at', { ascending: false })
+    .limit(limit);
+
+  if (error) {
+    console.error('Error fetching recent votes:', error);
+    return [];
+  }
+
+  console.log(`getRecentVotes: Found ${data?.length || 0} votes for recommendation ${recommendationId}`);
+  return data || [];
+}
