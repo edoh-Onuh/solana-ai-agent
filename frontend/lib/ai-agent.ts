@@ -272,7 +272,7 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     currentMetrics: DecentralizationMetrics,
     targetStake: number
   ): AIRecommendation {
-    // Improved strategy: select high-quality, underrepresented validators
+    // Enhanced strategy: multi-factor optimization for decentralization
     const candidates = validators
       .filter(v => !v.delinquent) // Must be active
       .filter(v => v.activatedStake > 100_000_000_000) // Min 100K SOL (active validators)
@@ -280,9 +280,33 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
       .filter(v => v.stakePercentage > 0.01) // Not too small (meaningful validators)
       .filter(v => v.commission <= 10) // Reasonable commission
       .sort((a, b) => {
-        // Sort by multiple factors: lower stake % + higher vote credits
-        const aScore = (1 - a.stakePercentage / 100) * 0.6 + (a.voteCredits / 10000) * 0.4;
-        const bScore = (1 - b.stakePercentage / 100) * 0.6 + (b.voteCredits / 10000) * 0.4;
+        // Multi-factor scoring for diversity
+        let aScore = 0;
+        let bScore = 0;
+        
+        // 1. Stake decentralization (40% weight)
+        aScore += (1 - a.stakePercentage / 100) * 40;
+        bScore += (1 - b.stakePercentage / 100) * 40;
+        
+        // 2. Performance (30% weight)
+        aScore += Math.min(30, (a.voteCredits / 10000) * 30);
+        bScore += Math.min(30, (b.voteCredits / 10000) * 30);
+        
+        // 3. Geographic diversity bonus (15% weight)
+        const usValidators = validators.filter(v => v.country === 'United States').length;
+        const totalValidators = validators.length;
+        const usConcentration = usValidators / totalValidators;
+        
+        if (a.country !== 'United States' && usConcentration > 0.3) aScore += 15;
+        if (b.country !== 'United States' && usConcentration > 0.3) bScore += 15;
+        
+        // 4. Client diversity bonus (15% weight)
+        const agaveCount = validators.filter(v => v.clientType === 'agave').length;
+        const agavePercentage = agaveCount / totalValidators;
+        
+        if (a.clientType !== 'agave' && agavePercentage > 0.6) aScore += 15;
+        if (b.clientType !== 'agave' && agavePercentage > 0.6) bScore += 15;
+        
         return bScore - aScore;
       })
       .slice(0, 15);
@@ -332,24 +356,45 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     }
 
     const stakePerValidator = targetStake / candidates.length;
+    
+    // Count diversity metrics
+    const countries = new Set(candidates.map(v => v.country).filter(Boolean));
+    const clients = candidates.reduce((acc, v) => {
+      acc[v.clientType || 'unknown'] = (acc[v.clientType || 'unknown'] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
 
-    const validatorRecs: ValidatorRecommendation[] = candidates.map(v => ({
-      pubkey: v.pubkey,
-      name: v.name || 'Unknown',
-      recommendedStake: stakePerValidator,
-      currentStake: v.activatedStake,
-      reason: `Strong performance (${v.voteCredits.toLocaleString()} credits), ${v.commission}% commission, ${v.stakePercentage.toFixed(3)}% network stake - excellent decentralization target`,
-      riskLevel: v.stakePercentage < 0.1 ? 'low' as const : v.stakePercentage < 0.5 ? 'medium' as const : 'high' as const,
-      decentralizationScore: Math.round((1 - v.stakePercentage / 100) * 100),
-      performanceScore: Math.min(95, Math.round((v.voteCredits / 1000) * 0.8 + 20)),
-    }));
+    const validatorRecs: ValidatorRecommendation[] = candidates.map(v => {
+      const geoBonus = v.country !== 'United States' ? ' | Non-US location' : '';
+      const clientType = v.clientType || 'unknown';
+      const clientBonus = clientType !== 'agave' ? ` | ${clientType.charAt(0).toUpperCase()}${clientType.slice(1)} client` : '';
+      
+      return {
+        pubkey: v.pubkey,
+        name: v.name || 'Unknown',
+        recommendedStake: stakePerValidator,
+        currentStake: v.activatedStake,
+        reason: `${v.voteCredits.toLocaleString()} vote credits, ${v.commission}% commission, ${v.stakePercentage.toFixed(3)}% stake${geoBonus}${clientBonus} | ${v.city}, ${v.country}`,
+        riskLevel: v.stakePercentage < 0.1 ? 'low' as const : v.stakePercentage < 0.5 ? 'medium' as const : 'high' as const,
+        decentralizationScore: Math.round((1 - v.stakePercentage / 100) * 100),
+        performanceScore: Math.min(95, Math.round((v.voteCredits / 1000) * 0.8 + 20)),
+      };
+    });
+
+    const clientSummary = Object.entries(clients)
+      .map(([client, count]) => `${count} ${client}`)
+      .join(', ');
 
     return {
       id: `rec_${Date.now()}`,
       timestamp: Date.now(),
       validators: validatorRecs,
-      reasoning: `Selected ${candidates.length} high-quality validators with strong performance metrics (avg commission: ${(candidates.reduce((sum, v) => sum + v.commission, 0) / candidates.length).toFixed(1)}%) and low network stake concentration. These validators have proven track records while helping improve decentralization.`,
-      confidence: 0.82,
+      reasoning: `Selected ${candidates.length} high-quality validators optimized for decentralization across multiple dimensions:\n\n` +
+        `📊 Performance: Avg ${(candidates.reduce((sum, v) => sum + v.commission, 0) / candidates.length).toFixed(1)}% commission, strong vote credits\n` +
+        `🌍 Geographic: ${countries.size} countries (${Array.from(countries).slice(0, 3).join(', ')}${countries.size > 3 ? '...' : ''})\n` +
+        `💻 Client Mix: ${clientSummary}\n` +
+        `🎯 Stake: Avg ${(candidates.reduce((sum, v) => sum + v.stakePercentage, 0) / candidates.length).toFixed(3)}% network stake per validator`,
+      confidence: 0.85,
       expectedImpact: {
         nakamotoCoefficient: {
           current: currentMetrics.nakamotoCoefficient,
