@@ -117,6 +117,11 @@ export class SolanaClient {
         const clientType = this.detectClientType(voteAccount);
         const geo = this.estimateGeography(index);
         
+        // Debug: Log first validator to verify data population
+        if (index === 0) {
+          console.log('First validator data:', { clientType, country: geo.country, city: geo.city });
+        }
+        
         return {
           pubkey: info.pubkey,
           votePubkey: info.votePubkey,
