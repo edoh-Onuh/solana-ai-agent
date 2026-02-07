@@ -52,18 +52,16 @@ export default function Home() {
 
   async function loadRecentVotes(recommendationId: string) {
     try {
-      const response = await fetch(`/api/votes/recent?recommendationId=${recommendationId}&limit=10`);
+      const response = await fetch(`/api/recent-votes?recommendationId=${recommendationId}&limit=10`);
       if (response.ok) {
         const data = await response.json();
-        if (data.success) {
-          console.log(`[${new Date().toLocaleTimeString()}] Loaded ${data.votes.length} votes`);
-          setRecentVotes(data.votes.map((v: any) => ({
-            id: v.id,
-            wallet: v.wallet_address,
-            voteType: v.vote_type,
-            timestamp: v.created_at,
-          })));
-        }
+        console.log(`[${new Date().toLocaleTimeString()}] Loaded ${data.votes?.length || 0} votes`);
+        setRecentVotes(data.votes?.map((v: any) => ({
+          id: v.id,
+          wallet: v.wallet_address,
+          voteType: v.vote_type,
+          timestamp: v.created_at,
+        })) || []);
       }
     } catch (err) {
       console.error('Error loading recent votes:', err);
