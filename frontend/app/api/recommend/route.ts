@@ -13,7 +13,7 @@ export async function POST(request: Request) {
     const recommendation = await aiAgent.generateRecommendations(
       validators as ValidatorMetrics[],
       metrics as DecentralizationMetrics,
-      targetStake || 1000000
+      targetStake || (1000000 * 1e9) // Default to 1M SOL in lamports
     );
     
     console.log('API: Recommendation generated successfully');

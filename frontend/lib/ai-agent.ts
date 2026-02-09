@@ -123,7 +123,7 @@ Format as JSON:
   async generateRecommendations(
     validators: ValidatorMetrics[],
     currentMetrics: DecentralizationMetrics,
-    targetStake: number = 1000000 // Amount of SOL to delegate
+    targetStake: number = 1000000 * 1e9 // Amount of SOL to delegate (1M SOL in lamports)
   ): Promise<AIRecommendation> {
     const openai = getOpenAIClient();
     
