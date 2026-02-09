@@ -412,7 +412,10 @@ export default function Home() {
                       </div>
                       <div className="text-right">
                         <div className="text-white font-semibold">
-                          {(v.recommendedStake / 1e9).toFixed(2)} SOL
+                          {(v.activatedStake / 1e9).toLocaleString()} SOL
+                        </div>
+                        <div className="text-purple-300 text-xs">
+                          {v.stakePercentage.toFixed(3)}% of network
                         </div>
                         <div className={`text-xs ${
                           v.riskLevel === 'low' ? 'text-green-400' :
