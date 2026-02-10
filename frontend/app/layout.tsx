@@ -17,6 +17,7 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Solana AI Validator Agent - Decentralization Optimization",
   description: "AI-powered agent for monitoring and optimizing Solana validator decentralization",
+  viewport: "width=device-width, initial-scale=1, maximum-scale=5",
 };
 
 export default function RootLayout({

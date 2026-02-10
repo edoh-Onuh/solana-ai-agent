@@ -265,7 +265,7 @@ export default function Home() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black p-6">
+    <div className="min-h-screen bg-gradient-to-br from-purple-900 via-blue-900 to-black p-3 sm:p-6">
       <main className="max-w-7xl mx-auto">
         {/* Data Source Banner */}
         {dataSource === 'mock' && (
@@ -294,26 +294,26 @@ export default function Home() {
         )}
         
         {/* Header */}
-        <div className="mb-8">
-          <div className="flex items-center justify-between">
+        <div className="mb-6 sm:mb-8">
+          <div className="flex flex-wrap items-center justify-between gap-4">
             <div>
-              <h1 className="text-4xl font-bold text-white mb-2 flex items-center gap-3">
-                <Shield className="w-10 h-10 text-purple-400" />
+              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-2 sm:gap-3">
+                <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" />
                 Validator Pulse AI Agent
               </h1>
-              <p className="text-purple-300 text-lg">
+              <p className="text-purple-300 text-sm sm:text-base md:text-lg">
                 Autonomous validator monitoring and decentralization optimization for Solana
               </p>
             </div>
-            <div className="flex items-center gap-3">
-              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors" />
+            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors !text-sm sm:!text-base" />
               <button
                 onClick={loadValidators}
                 disabled={loading}
-                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2"
+                className="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base"
               >
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                Refresh
+                <span className="hidden sm:inline">Refresh</span>
               </button>
             </div>
           </div>
@@ -321,29 +321,29 @@ export default function Home() {
 
         {/* Metrics Cards */}
         {metrics && (
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-              <div className="text-purple-300 text-sm mb-1">Total Validators</div>
-              <div className="text-3xl font-bold text-white">{validators.length}</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-xs sm:text-sm mb-1">Total Validators</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white">{validators.length}</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-              <div className="text-purple-300 text-sm mb-1">Nakamoto Coefficient</div>
-              <div className="text-3xl font-bold text-white">{metrics.nakamotoCoefficient}</div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-xs sm:text-sm mb-1">Nakamoto Coefficient</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white">{metrics.nakamotoCoefficient}</div>
               <div className="text-xs text-purple-400 mt-1">Min validators for 33% stake</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-              <div className="text-purple-300 text-sm mb-1">Top 10 Control</div>
-              <div className="text-3xl font-bold text-white">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-xs sm:text-sm mb-1">Top 10 Control</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white">
                 {metrics.topValidatorConcentration.top10Percentage.toFixed(1)}%
               </div>
-              <div className="text-xs text-purple-400 mt-1">Stake concentration</div>
+              <div className="text-xs text-purple-400 mt-1\">Stake concentration</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300 hover:scale-105">
-              <div className="text-purple-300 text-sm mb-1">Active Now</div>
-              <div className="text-3xl font-bold text-white">
+            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-xs sm:text-sm mb-1">Active Now</div>
+              <div className="text-2xl sm:text-3xl font-bold text-white">
                 {validators.filter(v => !v.delinquent).length}
               </div>
               <div className="text-xs text-purple-400 mt-1">Non-delinquent</div>
@@ -353,9 +353,9 @@ export default function Home() {
 
         {/* Visualization Charts */}
         {metrics && (
-          <div className="mb-8">
-            <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <Activity className="w-6 h-6 text-purple-400" />
+          <div className="mb-6 sm:mb-8">
+            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
               Network Health Metrics
             </h2>
             <MetricsCharts metrics={metrics} />
@@ -363,16 +363,16 @@ export default function Home() {
         )}
 
         {/* AI Recommendation Section */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20 mb-8">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-2xl font-bold text-white flex items-center gap-2">
-              <TrendingUp className="w-6 h-6 text-purple-400" />
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
+          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
+            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
               AI Recommendation Engine
             </h2>
             <button
               onClick={generateAIRecommendation}
               disabled={analyzing}
-              className="px-6 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors font-semibold"
+              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors font-semibold text-sm sm:text-base"
             >
               {analyzing ? 'Analyzing...' : 'Generate Recommendation'}
             </button>
@@ -380,10 +380,10 @@ export default function Home() {
 
           {recommendation ? (
             <div className="space-y-4">
-              <div className="bg-black/30 rounded-lg p-4">
-                <h3 className="text-white font-semibold mb-2">AI Reasoning:</h3>
-                <p className="text-purple-200">{recommendation.reasoning}</p>
-                <div className="mt-4 flex gap-4 text-sm">
+              <div className="bg-black/30 rounded-lg p-3 sm:p-4">
+                <h3 className="text-white font-semibold mb-2 text-sm sm:text-base">AI Reasoning:</h3>
+                <p className="text-purple-200 text-sm sm:text-base whitespace-pre-line">{recommendation.reasoning}</p>
+                <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
                   <div>
                     <span className="text-purple-300">Confidence: </span>
                     <span className="text-white font-semibold">
@@ -399,19 +399,19 @@ export default function Home() {
                 </div>
               </div>
 
-              <h3 className="text-white font-semibold text-lg">Recommended Validators:</h3>
-              <div className="grid gap-3">
+              <h3 className="text-white font-semibold text-base sm:text-lg">Recommended Validators:</h3>
+              <div className="grid gap-2 sm:gap-3">
                 {recommendation.validators.slice(0, 5).map((v, i) => (
-                  <div key={i} className="bg-black/30 rounded-lg p-4">
-                    <div className="flex justify-between items-start mb-2">
-                      <div>
-                        <div className="text-white font-mono text-sm">
+                  <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
+                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="text-white font-mono text-xs sm:text-sm break-all">
                           {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
                         </div>
-                        <div className="text-purple-300 text-sm">{v.name}</div>
+                        <div className="text-purple-300 text-xs sm:text-sm">{v.name}</div>
                       </div>
-                      <div className="text-right">
-                        <div className="text-white font-semibold">
+                      <div className="text-left sm:text-right">
+                        <div className="text-white font-semibold text-sm sm:text-base">
                           {((v.currentStake || 0) / 1e9).toLocaleString()} SOL
                         </div>
                         <div className="text-purple-300 text-xs">
@@ -431,26 +431,26 @@ export default function Home() {
               </div>
 
               {/* Voting Interface */}
-              <div className="bg-black/30 rounded-lg p-6 mt-6">
-                <h3 className="text-white font-semibold mb-4">Protocol Voting</h3>
-                <p className="text-purple-200 text-sm mb-4">
+              <div className="bg-black/30 rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
+                <h3 className="text-white font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Protocol Voting</h3>
+                <p className="text-purple-200 text-xs sm:text-sm mb-3 sm:mb-4 break-all">
                   {connected 
                     ? `Connected as ${publicKey?.toBase58().slice(0, 8)}...${publicKey?.toBase58().slice(-8)}` 
                     : 'Connect your wallet to vote on this AI recommendation'}
                 </p>
                 {!connected && (
                   <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-center">
-                    <p className="text-yellow-200 text-sm flex items-center justify-center gap-2">
+                    <p className="text-yellow-200 text-xs sm:text-sm flex items-center justify-center gap-2">
                       <Wallet className="w-4 h-4" />
                       Please connect your wallet to participate in voting
                     </p>
                   </div>
                 )}
-                <div className="flex gap-4">
+                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
                   <button 
                     onClick={() => handleVote('approve')}
                     disabled={!connected || userVote !== null || votingInProgress}
-                    className={`flex-1 px-6 py-3 rounded-lg transition-colors font-semibold ${
+                    className={`flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-semibold text-sm sm:text-base ${
                       userVote === 'approve' 
                         ? 'bg-green-700 text-white' 
                         : !connected || userVote !== null || votingInProgress
@@ -463,7 +463,7 @@ export default function Home() {
                   <button 
                     onClick={() => handleVote('reject')}
                     disabled={!connected || userVote !== null || votingInProgress}
-                    className={`flex-1 px-6 py-3 rounded-lg transition-colors font-semibold ${
+                    className={`flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-semibold text-sm sm:text-base ${
                       userVote === 'reject' 
                         ? 'bg-red-700 text-white' 
                         : !connected || userVote !== null || votingInProgress
@@ -474,38 +474,38 @@ export default function Home() {
                     ✗ Reject {userVote === 'reject' && '(Voted)'} {votingInProgress && userVote === null && '...'}
                   </button>
                 </div>
-                <div className="mt-4 text-center text-purple-300 text-sm">
+                <div className="mt-3 sm:mt-4 text-center text-purple-300 text-xs sm:text-sm">
                   Current Votes: <span className="text-green-400 font-semibold">{recommendation.votes.approve} approve</span>, <span className="text-red-400 font-semibold">{recommendation.votes.reject} reject</span> ({recommendation.votes.total} total)
                 </div>
                 {userVote && (
                   <div className="mt-3 text-center">
-                    <p className="text-green-400 text-sm">✓ Your vote has been recorded in the database</p>
+                    <p className="text-green-400 text-xs sm:text-sm">✓ Your vote has been recorded in the database</p>
                   </div>
                 )}
               </div>
 
               {/* Live Vote Feed */}
-              <div className="bg-black/30 rounded-lg p-6 mt-6">
-                <h3 className="text-white font-semibold mb-4 flex items-center gap-2">
-                  <Activity className="w-5 h-5 text-green-400 animate-pulse" />
+              <div className="bg-black/30 rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
+                <h3 className="text-white font-semibold mb-3 sm:mb-4 flex flex-wrap items-center gap-2 text-sm sm:text-base">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 animate-pulse" />
                   Live Vote Stream
                   <span className="ml-auto text-xs text-purple-300 font-normal">Updates every 3s</span>
                 </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
                   {recentVotes.length === 0 ? (
-                    <p className="text-purple-300 text-sm text-center py-4">No votes yet. Be the first to vote!</p>
+                    <p className="text-purple-300 text-xs sm:text-sm text-center py-4">No votes yet. Be the first to vote!</p>
                   ) : (
                     recentVotes.map((vote) => (
                       <div 
                         key={vote.id} 
-                        className="bg-white/5 rounded-lg p-3 flex items-center justify-between hover:bg-white/10 transition-colors"
+                        className="bg-white/5 rounded-lg p-2 sm:p-3 flex items-center justify-between hover:bg-white/10 transition-colors gap-2"
                       >
-                        <div className="flex items-center gap-3">
-                          <div className={`w-2 h-2 rounded-full ${
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
+                          <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                             vote.voteType === 'approve' ? 'bg-green-400' : 'bg-red-400'
                           }`} />
-                          <div>
-                            <div className="text-white text-sm font-mono">
+                          <div className="min-w-0 flex-1">
+                            <div className="text-white text-xs sm:text-sm font-mono truncate">
                               {vote.wallet.slice(0, 4)}...{vote.wallet.slice(-4)}
                             </div>
                             <div className="text-purple-300 text-xs">
@@ -513,7 +513,7 @@ export default function Home() {
                             </div>
                           </div>
                         </div>
-                        <div className={`px-3 py-1 rounded-full text-xs font-semibold ${
+                        <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
                           vote.voteType === 'approve' 
                             ? 'bg-green-500/20 text-green-400' 
                             : 'bg-red-500/20 text-red-400'
