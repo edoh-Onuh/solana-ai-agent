@@ -273,45 +273,42 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     targetStake: number
   ): AIRecommendation {
     // Enhanced strategy: multi-factor optimization for decentralization
-    const eligible = validators
-      .filter(v => !v.delinquent) // Must be active
-      .filter(v => v.activatedStake > 100_000_000_000) // Min 100K SOL (active validators)
-      .filter(v => v.stakePercentage < 1) // Not in top concentrated validators
-      .filter(v => v.stakePercentage > 0.01) // Not too small (meaningful validators)
-      .filter(v => v.commission <= 10); // Reasonable commission
-    
     const totalValidators = validators.length;
     const usValidators = validators.filter(v => v.country === 'United States').length;
     const usConcentration = usValidators / totalValidators;
     const agaveCount = validators.filter(v => v.clientType === 'agave').length;
     const agavePercentage = agaveCount / totalValidators;
     
-    // Sort by combined score with randomization for variety
-    const candidates = eligible
-      .map(v => {
-        let score = 0;
+    const candidates = validators
+      .filter(v => !v.delinquent) // Must be active
+      .filter(v => v.activatedStake > 100_000_000_000) // Min 100K SOL (active validators)
+      .filter(v => v.stakePercentage < 1) // Not in top concentrated validators
+      .filter(v => v.stakePercentage > 0.01) // Not too small (meaningful validators)
+      .filter(v => v.commission <= 10) // Reasonable commission
+      .sort((a, b) => {
+        // Multi-factor scoring for diversity
+        let aScore = 0;
+        let bScore = 0;
         
         // 1. Stake decentralization (40% weight)
-        score += (1 - v.stakePercentage / 100) * 40;
+        aScore += (1 - a.stakePercentage / 100) * 40;
+        bScore += (1 - b.stakePercentage / 100) * 40;
         
         // 2. Performance (30% weight)
-        score += Math.min(30, (v.voteCredits / 10000) * 30);
+        aScore += Math.min(30, (a.voteCredits / 10000) * 30);
+        bScore += Math.min(30, (b.voteCredits / 10000) * 30);
         
         // 3. Geographic diversity bonus (15% weight)
-        if (v.country !== 'United States' && usConcentration > 0.3) score += 15;
+        if (a.country !== 'United States' && usConcentration > 0.3) aScore += 15;
+        if (b.country !== 'United States' && usConcentration > 0.3) bScore += 15;
         
         // 4. Client diversity bonus (15% weight)
-        if (v.clientType !== 'agave' && agavePercentage > 0.6) score += 15;
+        if (a.clientType !== 'agave' && agavePercentage > 0.6) aScore += 15;
+        if (b.clientType !== 'agave' && agavePercentage > 0.6) bScore += 15;
         
-        // 5. Add controlled randomization (±5 points) for variety
-        const randomFactor = (Math.random() - 0.5) * 10; // -5 to +5
-        score += randomFactor;
-        
-        return { validator: v, score };
+        return bScore - aScore;
       })
-      .sort((a, b) => b.score - a.score)
-      .slice(0, 15)
-      .map(item => item.validator);
+      .slice(0, 15);
 
     if (candidates.length === 0) {
       // Emergency fallback: just pick non-delinquent validators
