@@ -1,6 +1,6 @@
 # 🤖 Validator Pulse AI Agent
 
-> **Autonomous AI agent that monitors 806+ Solana validators in real-time, optimizes network decentralization across 4 dimensions, and generates data-driven stake delegation recommendations with wallet-authenticated voting.**
+> **Autonomous AI agent that monitors 806+ Solana validators in real-time, optimizes network decentralization across 4 dimensions, and generates data-driven stake delegation recommendations with wallet-authenticated voting and live vote streaming.**
 
 [![Colosseum Hackathon](https://img.shields.io/badge/Colosseum-AI%20Agent-purple)](https://colosseum.org)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -14,9 +14,25 @@
 
 **🚀 Live Demo:** [https://solana-ai-agent-validator.vercel.app](https://solana-ai-agent-validator.vercel.app)
 
-**✅ Status:** Production-Ready | Live on Solana Mainnet | 806 Validators Monitored
+**✅ Status:** Production-Ready | Live on Solana Mainnet | 806 Validators Monitored | Live Vote Streaming | Mobile-Responsive
 
 **📧 Contact:** @adanubrown (Twitter) | adanu1947@gmail.com
+
+---
+
+## ✨ Latest Features
+
+### 🎯 Live Vote Streaming
+Real-time vote feed with 3-second polling showing the last 10 votes. Watch as wallet addresses cast their votes with animated indicators and timestamps.
+
+### 📱 Mobile-Responsive Design  
+Fully optimized for all screen sizes - from mobile phones (320px+) to tablets and desktops. Responsive grids, flexible layouts, and touch-friendly buttons throughout.
+
+### 🤖 Deterministic AI Algorithm
+Reproducible recommendations for the same network state. Enables protocol governance, auditability, and transparent decision-making.
+
+### 💰 Current Validator Stakes
+Displays real-time validator stake amounts (e.g., "43,591.899 SOL") directly from Solana mainnet for informed delegation decisions.
 
 ---
 
@@ -106,11 +122,13 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ### 2. **Enhanced AI Recommendation Engine**
 ```
 ✅ OpenAI GPT-4o with 60+ line sophisticated prompts
-✅ Multi-factor scoring algorithm:
+✅ Deterministic multi-factor scoring algorithm:
    - Stake decentralization: 40% weight
    - Performance (vote credits): 30% weight
    - Geographic diversity: 15% weight (bonus for non-US)
    - Client diversity: 15% weight (bonus for non-Agave)
+   - Reproducible results for same network state
+   - Auditability for protocol governance decisions
 ✅ Rule-based fallback (85% confidence):
    - Min 100K SOL stake filter
    - Commission ≤10% filter
@@ -118,6 +136,7 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ✅ Rich reasoning with emoji indicators:
    📊 Performance | 🌍 Geographic | 💻 Client Mix | 🎯 Stake
 ✅ Per-validator details: "London, UK | Jito client | 5% commission"
+✅ Current stake display: "43,591.899 SOL Current stake"
 ```
 
 ### 3. **Production Wallet Authentication & Voting**
@@ -128,6 +147,10 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ✅ Real-time vote counts from database
 ✅ Wallet address authentication and verification
 ✅ Vote history tracking and analytics
+✅ Live vote streaming with 3-second polling
+✅ Recent vote feed displaying last 10 votes
+✅ Real-time wallet addresses and vote types
+✅ Automatic vote count updates every 3 seconds
 ```
 
 ### 4. **Human Voting Interface**
@@ -139,10 +162,47 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ✅ Real-time vote counts: "1 approve, 0 reject (1 total)"
 ✅ Vote confirmation messages with wallet address
 ✅ Voting state management (prevents double-voting)
-✅ Responsive UI with Tailwind CSS 4
+✅ Fully mobile-responsive UI with Tailwind CSS 4
+✅ Responsive breakpoints: sm:, md:, lg: across all components
+✅ Flexible layouts: Grid adapts from 1 column (mobile) to 4 columns (desktop)
+✅ Touch-friendly buttons and voting interface
+✅ Viewport optimized for mobile browsers
+✅ Live vote stream visible on all screen sizes
 ```
 
-### 5. **Comprehensive Analytics Dashboard**
+### 5. **Live Vote Streaming**
+```
+✅ Real-time vote feed with 3-second polling interval
+✅ Displays last 10 votes with:
+   - Wallet address (truncated for privacy)
+   - Vote type (approve/reject) with color indicators
+   - Timestamp showing when vote was cast
+   - Animated pulse indicator for live updates
+✅ Auto-updates vote counts without page refresh
+✅ Filters votes by current recommendation ID
+✅ Clean, modern UI with hover effects
+✅ "No votes yet" empty state for new recommendations
+✅ Mobile-responsive vote cards with flexible layout
+```
+
+### 6. **Mobile-Responsive Design**
+```
+✅ Fully responsive across all device sizes:
+   - Mobile phones (320px+)
+   - Tablets (768px+)
+   - Desktops (1024px+)
+✅ Responsive text sizes: text-2xl sm:text-3xl md:text-4xl
+✅ Adaptive padding: p-3 sm:p-4 md:p-6
+✅ Flexible grids: grid-cols-1 md:grid-cols-4
+✅ Stack-to-row layouts: flex-col sm:flex-row
+✅ Viewport meta tags for proper mobile rendering
+✅ Touch-optimized buttons and interactive elements
+✅ No horizontal scrolling on any device
+✅ Wallet buttons adapt to screen size
+✅ Charts and visualizations scale appropriately
+```
+
+### 7. **Comprehensive Analytics Dashboard**
 ```
 ✅ Network Health Metrics:
    - Total Validators: 806
@@ -166,7 +226,7 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
    - Top 50 Validators: 54.4%
 ```
 
-### 6. **Production-Ready Infrastructure**
+### 8. **Production-Ready Infrastructure**
 ```
 ✅ Server-side API key management (OPENAI_API_KEY, SOLANA_RPC_URL)
 ✅ Supabase PostgreSQL with connection pooling
@@ -174,11 +234,14 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ✅ Alchemy RPC (uz8fOkPUV4oWp3X3AM4O2) for reliable mainnet access
 ✅ Multi-RPC failover: Alchemy → Official → Serum DEX
 ✅ Graceful error handling with user-friendly messages
-✅ Responsive design (mobile/tablet/desktop)
+✅ Fully responsive design (mobile/tablet/desktop)
 ✅ Loading states and smooth animations
 ✅ Deployed on Vercel with environment variables
 ✅ Debug logging: "First validator data: {clientType, country, city}"
 ✅ Status indicators: Live Mode | Demo Mode | Error states
+✅ API route for live vote streaming (/api/recent-votes)
+✅ Real-time polling with useEffect cleanup
+✅ TypeScript type safety throughout
 ```
 
 ---
@@ -235,7 +298,7 @@ AI Agent → Alchemy RPC → getAllValidators()
       🎯 "Avg 0.012% network stake per validator"
 ```
 
-### Step 3: Wallet-Authenticated Voting
+### Step 3: Wallet-Authenticated Voting with Live Streaming
 ```
 AI Recommendations → Dashboard Display
                           ↓
@@ -243,8 +306,8 @@ AI Recommendations → Dashboard Display
               (Phantom/Solflare/Torus/Ledger)
                           ↓
               Review Recommendation Details:
-              - 15 validators with locations
-              - Client types & performance
+              - 15 validators with locations & current stakes
+              - Client types & performance metrics
               - Expected impact (Nakamoto +2)
                           ↓
               Vote: ✓ Approve or ✗ Reject
@@ -258,9 +321,18 @@ AI Recommendations → Dashboard Display
               Supabase INSERT with UNIQUE constraint
               (prevents double-voting per wallet)
                           ↓
-              Real-time Display:
+              Real-time Display Updates:
               "1 approve, 0 reject (1 total)"
               "✓ Your vote has been recorded"
+                          ↓
+              Live Vote Stream (3-second polling):
+              GET /api/recent-votes?recommendationId=XXX&limit=10
+                          ↓
+              Display Last 10 Votes:
+              - Wallet: "4azn...9CF5"
+              - Type: ✓ Approved or ✗ Rejected
+              - Time: "2:34:56 PM"
+              - Auto-updates every 3 seconds
 ```
 
 ### Step 4: Impact Measurement (Future)
@@ -572,9 +644,9 @@ Status Indicator:
 
 #### 3. **Generate AI Recommendation**
 ```
-Click "Get AI Recommendations" button
+Click "Generate Recommendation" button
 ↓
-Multi-Factor AI Analysis (5-10 seconds):
+Deterministic Multi-Factor AI Analysis (5-10 seconds):
 1. Filter 806 validators:
    • Min 100K SOL stake
    • Commission ≤10%
@@ -591,6 +663,8 @@ Multi-Factor AI Analysis (5-10 seconds):
    • +15 points for non-Agave clients (if Agave >60%)
    
 4. Select top 15 validators
+   • Deterministic: Same results for same network state
+   • Reproducible: Enables audit and governance transparency
 ↓
 AI Recommendations Display:
 • Overall Reasoning with Emoji Indicators:
@@ -599,20 +673,23 @@ AI Recommendations Display:
   💻 "Client mix: 14 jito, 1 firedancer (helps reduce Agave dominance)"
   🎯 "Avg 0.012% network stake per validator (excellent decentralization)"
   
-• Per-Validator Details (15 validators):
+• Per-Validator Details (Top 5 displayed):
   - Public key: 7GZXu...3pLJ
   - Location: "London, United Kingdom"
   - Client: "Jito client"
   - Commission: "5%"
-  - Stake: "150,000 SOL (0.012%)"
+  - Current stake: "43,591.899 SOL" (real mainnet data)
+  - Stake percentage: "0.012%"
   - Vote Credits: "28,500"
+  - Risk Level: "low risk" (color-coded)
+  - Reason: Detailed explanation
   
 • Expected Impact:
   - "Nakamoto Coefficient: 19 → 21 (+2)"
   - "Geographic diversity: +2 countries"
   - "Client diversity: +5% non-Agave"
   
-• Confidence: "85% (Rule-based fallback)"
+• Confidence: "85% (Deterministic rule-based algorithm)"
 ```
 
 #### 4. **Review and Vote**
@@ -637,13 +714,25 @@ Confirmation Message:
 "Vote from wallet: 4azn...9CF5"
 ```
 
-#### 5. **Track Vote Results**
+#### 5. **Track Vote Results with Live Stream**
 ```
 Real-time Vote Display:
 • "1 approve, 0 reject (1 total)"
 • Vote counts persist across page refreshes
 • Historical voting data stored in Supabase
 • Your vote status: "✓ You voted: Approve"
+
+Live Vote Stream (Updates every 3 seconds):
+• Shows last 10 votes in real-time
+• Each vote displays:
+  - Wallet address: "4azn...9CF5"
+  - Vote type: ✓ Approved or ✗ Rejected
+  - Timestamp: "2:34:56 PM"
+  - Color indicator (green for approve, red for reject)
+• Animated pulse indicator shows live status
+• Updates automatically without page refresh
+• "No votes yet. Be the first to vote!" for new recommendations
+• Mobile-responsive vote cards with hover effects
 
 Vote State Management:
 • Voting buttons disable after voting
@@ -873,34 +962,41 @@ Checks system configuration and health.
 ### Frontend
 - **Framework**: Next.js 16 (App Router)
 - **Language**: TypeScript 5
-- **Styling**: Tailwind CSS 4
+- **Styling**: Tailwind CSS 4 (fully responsive)
 - **Icons**: Lucide React
 - **State Management**: React Hooks (useState, useEffect)
+- **Wallet Integration**: Solana Wallet Adapter (Phantom, Solflare, Torus, Ledger)
+- **Real-time Updates**: useEffect polling (3-second intervals)
 
 ### Backend/API
 - **Runtime**: Next.js API Routes (Node.js)
 - **Language**: TypeScript
-- **AI**: OpenAI GPT-4 Turbo
+- **AI**: OpenAI GPT-4o (with deterministic fallback)
 - **Blockchain**: Solana Web3.js 1.98
+- **Database**: Supabase PostgreSQL (vote persistence)
 
 ### Infrastructure
-- **Deployment**: Vercel (ready)
+- **Deployment**: Vercel (production)
+- **Database**: Supabase (PostgreSQL with connection pooling)
 - **RPC Providers**: 
-  - Alchemy (primary)
+  - Alchemy (primary - uz8fOkPUV4oWp3X3AM4O2)
   - Solana Official Mainnet (fallback)
   - Serum DEX (fallback)
-- **CI/CD**: GitHub Actions (optional)
+- **CI/CD**: GitHub Actions (auto-deploy to Vercel)
 
 ### Development Tools
 - **Package Manager**: npm
 - **Linting**: ESLint 9
 - **Type Checking**: TypeScript compiler
 - **Version Control**: Git
+- **Mobile Testing**: Responsive design breakpoints (sm:, md:, lg:)
 
-### Third-Party APIs
-- **OpenAI API**: GPT-4 for AI analysis
-- **Solana RPC**: Validator data retrieval
-- **Fallback Data**: Generated mock data for reliability
+### Third-Party APIs & Services
+- **OpenAI API**: GPT-4o for AI analysis
+- **Solana RPC**: Validator data retrieval (806+ validators)
+- **Supabase**: PostgreSQL database for votes
+- **Alchemy**: Reliable Solana mainnet RPC endpoint
+- **Fallback Data**: Deterministic mock data for reliability
 
 ---
 
@@ -924,8 +1020,10 @@ git push origin main
 In Vercel Dashboard → Settings → Environment Variables:
 ```
 OPENAI_API_KEY=sk-proj-your_key_here
-SOLANA_RPC_URL=https://solana-mainnet.g.alchemy.com/v2/demo
+SOLANA_RPC_URL=https://solana-mainnet.g.alchemy.com/v2/uz8fOkPUV4oWp3X3AM4O2
 NEXT_PUBLIC_SOLANA_RPC_URL=https://api.mainnet-beta.solana.com
+NEXT_PUBLIC_SUPABASE_URL=https://your-project.supabase.co
+NEXT_PUBLIC_SUPABASE_ANON_KEY=your_anon_key_here
 ```
 
 4. **Deploy**
@@ -986,23 +1084,25 @@ NODE_ENV=production
 
 ## 📊 Impact & Metrics
 
-### Current Solana Network State
-- **Nakamoto Coefficient**: 31 validators
-- **Top 10 Stake Concentration**: ~32.5%
-- **Top 20 Stake Concentration**: ~44.8%
-- **Top 50 Stake Concentration**: ~58.2%
-- **Geographic Diversity**: Concentrated in US/Europe
-- **Client Diversity**: 65% Agave, 30% Jito, 5% others
+### Current Solana Network State (Live Data)
+- **Total Validators**: 806 active on mainnet
+- **Nakamoto Coefficient**: 19 validators (minimum for 33% stake)
+- **Top 10 Stake Concentration**: 23.1%
+- **Top 20 Stake Concentration**: 34.1%
+- **Top 50 Stake Concentration**: 54.4%
+- **Geographic Diversity**: 11 countries, 12 cities
+- **Client Diversity**: 63.9% Agave, 30.9% Jito, 5.2% Firedancer
 
 ### Projected Impact (if adopted by 10 protocols)
 
 | Metric | Current | Projected | Improvement |
 |--------|---------|-----------|-------------|
-| **Nakamoto Coefficient** | 31 | 50+ | +61% |
-| **Top 10 Stake** | 32.5% | 25-28% | -4.5% to -7.5% |
-| **Top 50 Stake** | 58.2% | 52-55% | -3.2% to -6.2% |
-| **Countries** | 15 | 20+ | +33% |
-| **Client Diversity** | 65/30/5 | 55/35/10 | More balanced |
+| **Nakamoto Coefficient** | 19 | 21-24 | +10% to +26% |
+| **Top 10 Stake** | 23.1% | 19-21% | -2.1% to -4.1% |
+| **Top 50 Stake** | 54.4% | 50-52% | -2.4% to -4.4% |
+| **Countries** | 11 | 15+ | +36% |
+| **Client Diversity** | 64/31/5 | 55/35/10 | More balanced |
+| **Active Validators** | 806 | 850+ | Improved participation |
 
 ### Real-World Use Cases
 
@@ -1064,12 +1164,18 @@ NODE_ENV=production
 
 ## 🗺️ Roadmap
 
-### Phase 1: MVP (Current) ✅
-- [x] Real-time validator monitoring
-- [x] AI recommendation engine
-- [x] Voting interface
-- [x] Basic visualizations
-- [x] Vercel deployment ready
+### Phase 1: MVP (Complete) ✅
+- [x] Real-time validator monitoring (806 validators)
+- [x] AI recommendation engine (GPT-4o + deterministic fallback)
+- [x] Wallet-authenticated voting interface
+- [x] Live vote streaming (3-second polling)
+- [x] Supabase PostgreSQL integration
+- [x] Client diversity detection (Agave/Jito/Firedancer)
+- [x] Geographic distribution tracking
+- [x] Mobile-responsive design (all screen sizes)
+- [x] Current validator stake display
+- [x] Vercel production deployment
+- [x] 4 wallet provider support (Phantom, Solflare, Torus, Ledger)
 
 ### Phase 2: Enhanced AI (Week 2-3)
 - [ ] Historical data analysis
@@ -1152,12 +1258,6 @@ With the following conditions:
 
 ---
 
-## 🏆 Colosseum Hackathon
-
-**Category**: AI Agent  
-**Submission Date**: February 12, 2026  
-**Team**: Solo project  
-**Prize**: $100,000
 
 ### Why This Project Wins
 
@@ -1188,7 +1288,7 @@ With the following conditions:
 ## 📞 Contact & Support
 
 - **GitHub Issues**: [Report bugs or request features](https://github.com/edoh-Onuh/solana-ai-agent/issues)
-- **Twitter**: [@adanubrown]
+- **X**: [@adanubrown]
 - **Email**: adanu1947@gmail.com
 
 ---
