@@ -153,11 +153,11 @@ export default function Home() {
       }));
       
       // Log first 10 validator pubkeys to help identify which ones to add to Superteam list
-      console.log('First 10 validators by stake:', data.validators.slice(0, 10).map((v: any) => ({
-        pubkey: v.pubkey,
-        name: v.name,
-        stake: (v.activatedStake / 1e9).toFixed(0) + ' SOL'
-      })));
+      console.log('=== TOP 10 VALIDATORS BY STAKE ===');
+      data.validators.slice(0, 10).forEach((v: any, i: number) => {
+        console.log(`${i + 1}. ${v.pubkey} - ${v.name} - ${(v.activatedStake / 1e9).toFixed(0)} SOL`);
+      });
+      console.log('===================================');
       
       setValidators(validatorsWithSuperteam);
       setMetrics(data.metrics);
