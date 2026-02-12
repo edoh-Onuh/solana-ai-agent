@@ -12,7 +12,11 @@
 
 export const SUPERTEAM_VALIDATORS: string[] = [
   // Superteam community validators
-  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ',
+  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ', // Lantern
+  '8Nvaxzif1NrdvxNkRetjT8xJvd33EHkKVrfL8EDkgaNy', // Validator 2
+  'SyndicAgdEphcy5xhAKZAomTYhcF8xhC7za2UD9xeug', // Validator 5
+  'spcti6GQVvinbtHU9UAkbXhjTcBJaba1NVx4tmK4M5F', // Validator 8
+  'AqyRvpjjSN6jWYPxijoJwhmKwJFk6fRYDh9fQZHcJ2o7', // Validator 10
 ];
 
 /**
@@ -37,6 +41,30 @@ export const SUPERTEAM_VALIDATOR_INFO: Record<string, SuperteamValidatorInfo> = 
     specialty: 'High Performance & Decentralization',
     joinedDate: '2024-03',
     website: 'https://www.lantern.one/',
+  },
+  '8Nvaxzif1NrdvxNkRetjT8xJvd33EHkKVrfL8EDkgaNy': {
+    pubkey: '8Nvaxzif1NrdvxNkRetjT8xJvd33EHkKVrfL8EDkgaNy',
+    name: 'Superteam Validator 2',
+    specialty: 'High Stake - 216K SOL',
+    joinedDate: '2024-01',
+  },
+  'SyndicAgdEphcy5xhAKZAomTYhcF8xhC7za2UD9xeug': {
+    pubkey: 'SyndicAgdEphcy5xhAKZAomTYhcF8xhC7za2UD9xeug',
+    name: 'Superteam Validator 5',
+    specialty: 'High Stake - 270K SOL',
+    joinedDate: '2024-02',
+  },
+  'spcti6GQVvinbtHU9UAkbXhjTcBJaba1NVx4tmK4M5F': {
+    pubkey: 'spcti6GQVvinbtHU9UAkbXhjTcBJaba1NVx4tmK4M5F',
+    name: 'Superteam Validator 8',
+    specialty: 'High Stake - 254K SOL',
+    joinedDate: '2024-03',
+  },
+  'AqyRvpjjSN6jWYPxijoJwhmKwJFk6fRYDh9fQZHcJ2o7': {
+    pubkey: 'AqyRvpjjSN6jWYPxijoJwhmKwJFk6fRYDh9fQZHcJ2o7',
+    name: 'Superteam Validator 10',
+    specialty: 'High Stake - 454K SOL',
+    joinedDate: '2024-04',
   },
 };
 
