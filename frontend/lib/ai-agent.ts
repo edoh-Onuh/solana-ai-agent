@@ -1,6 +1,7 @@
 // AI Agent for validator analysis and recommendations
 import OpenAI from 'openai';
 import { ValidatorMetrics, AIRecommendation, ValidatorRecommendation, DecentralizationMetrics } from './types';
+import { isSuperteamValidator, SUPERTEAM_SCORE_BOOST, SUPERTEAM_MIN_PERCENTAGE } from './superteam-validators';
 
 // Only initialize OpenAI on server-side
 const getOpenAIClient = () => {
@@ -87,6 +88,12 @@ Format as JSON:
     // Decentralization scoring
     if (validator.stakePercentage < 0.5) score += 10;
     if (validator.country && validator.country !== 'US') score += 5;
+
+    // Superteam Community Bonus
+    if (isSuperteamValidator(validator.pubkey)) {
+      score += SUPERTEAM_SCORE_BOOST;
+      recommendations.push('Superteam Community validator - trusted by the community');
+    }
 
     // Identify risks
     if (validator.stakePercentage > 2) {
@@ -306,9 +313,28 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
         if (a.clientType !== 'agave' && agavePercentage > 0.6) aScore += 15;
         if (b.clientType !== 'agave' && agavePercentage > 0.6) bScore += 15;
         
+        // 5. Superteam Community Bonus
+        if (isSuperteamValidator(a.pubkey)) aScore += SUPERTEAM_SCORE_BOOST;
+        if (isSuperteamValidator(b.pubkey)) bScore += SUPERTEAM_SCORE_BOOST;
+        
         return bScore - aScore;
       })
       .slice(0, 15);
+
+    // Ensure minimum Superteam representation
+    const superteamCount = candidates.filter(v => isSuperteamValidator(v.pubkey)).length;
+    const minSuperteamNeeded = Math.ceil(candidates.length * (SUPERTEAM_MIN_PERCENTAGE / 100));
+    
+    if (superteamCount < minSuperteamNeeded) {
+      // Add more Superteam validators
+      const superteamValidators = validators
+        .filter(v => !v.delinquent && isSuperteamValidator(v.pubkey))
+        .filter(v => !candidates.some(c => c.pubkey === v.pubkey))
+        .slice(0, minSuperteamNeeded - superteamCount);
+      
+      // Replace lowest scoring non-Superteam validators
+      candidates = [...candidates.slice(0, -(minSuperteamNeeded - superteamCount)), ...superteamValidators];
+    }
 
     if (candidates.length === 0) {
       // Emergency fallback: just pick non-delinquent validators
