@@ -1,11 +1,13 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-import { Activity, TrendingUp, Shield, AlertCircle, RefreshCw, Wallet } from 'lucide-react';
+import { useState, useEffect, useMemo } from 'react';
+import { Activity, TrendingUp, Shield, AlertCircle, RefreshCw, Wallet, Users } from 'lucide-react';
 import { ValidatorMetrics, DecentralizationMetrics, AIRecommendation } from '@/lib/types';
 import { MetricsCharts } from '@/components/MetricsCharts';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
+import { SuperteamBadge, SuperteamStats, SuperteamFilter } from '@/components/SuperteamComponents';
+import { isSuperteamValidator } from '@/lib/superteam-validators';
 
 interface VoteDisplay {
   id: string;
@@ -27,6 +29,32 @@ export default function Home() {
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
   const [votingInProgress, setVotingInProgress] = useState(false);
   const [recentVotes, setRecentVotes] = useState<VoteDisplay[]>([]);
+  const [showSuperteamOnly, setShowSuperteamOnly] = useState(false);
+
+  // Calculate Superteam stats
+  const superteamStats = useMemo(() => {
+    const superteamValidators = validators.filter(v => isSuperteamValidator(v.pubkey));
+    const totalStake = superteamValidators.reduce((sum, v) => sum + v.activatedStake, 0);
+    const avgCommission = superteamValidators.length > 0
+      ? superteamValidators.reduce((sum, v) => sum + v.commission, 0) / superteamValidators.length
+      : 0;
+    const countries = new Set(superteamValidators.map(v => v.country).filter(Boolean)).size;
+
+    return {
+      totalValidators: superteamValidators.length,
+      totalStake,
+      averageCommission: avgCommission,
+      countries,
+    };
+  }, [validators]);
+
+  // Filter validators based on Superteam toggle
+  const displayedValidators = useMemo(() => {
+    if (showSuperteamOnly) {
+      return validators.filter(v => isSuperteamValidator(v.pubkey));
+    }
+    return validators;
+  }, [validators, showSuperteamOnly]);
 
   useEffect(() => {
     loadValidators();
@@ -315,6 +343,11 @@ export default function Home() {
                 <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Refresh</span>
               </button>
+              <SuperteamFilter 
+                enabled={showSuperteamOnly}
+                onToggle={() => setShowSuperteamOnly(!showSuperteamOnly)}
+                count={superteamStats.totalValidators}
+              />
             </div>
           </div>
         </div>
@@ -362,6 +395,15 @@ export default function Home() {
           </div>
         )}
 
+        {/* Superteam Community Validators Section */}
+        <div className="mb-6 sm:mb-8">
+          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
+            Superteam Community Validators
+          </h2>
+          <SuperteamStats {...superteamStats} />
+        </div>
+
         {/* AI Recommendation Section */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
@@ -405,8 +447,11 @@ export default function Home() {
                   <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
                     <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
                       <div className="flex-1 min-w-0">
-                        <div className="text-white font-mono text-xs sm:text-sm break-all">
+                        <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-2 flex-wrap">
                           {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
+                          {isSuperteamValidator(v.pubkey) && (
+                            <SuperteamBadge size="sm" />
+                          )}
                         </div>
                         <div className="text-purple-300 text-xs sm:text-sm">{v.name}</div>
                       </div>
@@ -540,15 +585,20 @@ export default function Home() {
 
         {/* Top Validators List */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-4">Top Validators by Stake</h2>
+          <h2 className="text-2xl font-bold text-white mb-4">
+            {showSuperteamOnly ? 'Superteam Community Validators' : 'Top Validators by Stake'}
+          </h2>
           <div className="space-y-2">
-            {validators.slice(0, 10).map((validator, index) => (
+            {displayedValidators.slice(0, 10).map((validator, index) => (
               <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
                 <div className="flex items-center gap-4">
                   <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
                   <div>
-                    <div className="text-white font-mono text-sm">
+                    <div className="text-white font-mono text-sm flex items-center gap-2">
                       {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
+                      {isSuperteamValidator(validator.pubkey) && (
+                        <SuperteamBadge size="sm" />
+                      )}
                     </div>
                     <div className="text-purple-300 text-xs">{validator.name}</div>
                   </div>
