@@ -379,14 +379,16 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     const validatorRecs: ValidatorRecommendation[] = candidates.map(v => {
       const geoBonus = v.country !== 'United States' ? ' | Non-US location' : '';
       const clientType = v.clientType || 'unknown';
-      const clientBonus = clientType !== 'agave' ? ` | ${clientType.charAt(0).toUpperCase()}${clientType.slice(1)} client` : '';
+      const clientBonus = clientType !== 'agave' ? ` | ${clientType.charAt(0).toUpperCase()}${clientType.slice(1)} client` : ` | ${clientType.charAt(0).toUpperCase()}${clientType.slice(1)} client`;
+      const voteCreditsFormatted = v.voteCredits ? v.voteCredits.toLocaleString() : '0';
+      const location = v.city && v.country ? `${v.city}, ${v.country}` : (v.country || 'Unknown location');
       
       return {
         pubkey: v.pubkey,
         name: v.name || 'Unknown',
         recommendedStake: stakePerValidator,
         currentStake: v.activatedStake,
-        reason: `${v.voteCredits.toLocaleString()} vote credits, ${v.commission}% commission, ${v.stakePercentage.toFixed(3)}% stake${geoBonus}${clientBonus} | ${v.city}, ${v.country}`,
+        reason: `${voteCreditsFormatted} vote credits, ${v.commission.toFixed(1)}% commission, ${v.stakePercentage.toFixed(3)}% stake${geoBonus}${clientBonus} | ${location}`,
         riskLevel: v.stakePercentage < 0.1 ? 'low' as const : v.stakePercentage < 0.5 ? 'medium' as const : 'high' as const,
         decentralizationScore: Math.round((1 - v.stakePercentage / 100) * 100),
         performanceScore: Math.min(95, Math.round((v.voteCredits / 1000) * 0.8 + 20)),
@@ -396,16 +398,21 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     const clientSummary = Object.entries(clients)
       .map(([client, count]) => `${count} ${client}`)
       .join(', ');
+    
+    // Calculate real-time averages from selected validators
+    const avgCommission = (candidates.reduce((sum, v) => sum + v.commission, 0) / candidates.length).toFixed(1);
+    const avgStakePercentage = (candidates.reduce((sum, v) => sum + v.stakePercentage, 0) / candidates.length).toFixed(3);
+    const avgVoteCredits = Math.round(candidates.reduce((sum, v) => sum + v.voteCredits, 0) / candidates.length);
 
     return {
       id: `rec_${Date.now()}`,
       timestamp: Date.now(),
       validators: validatorRecs,
       reasoning: `Selected ${candidates.length} high-quality validators optimized for decentralization across multiple dimensions:\n\n` +
-        `📊 Performance: Avg ${(candidates.reduce((sum, v) => sum + v.commission, 0) / candidates.length).toFixed(1)}% commission, strong vote credits\n` +
+        `📊 Performance: Avg ${avgCommission}% commission, ${avgVoteCredits.toLocaleString()} vote credits\n` +
         `🌍 Geographic: ${countries.size} countries (${Array.from(countries).slice(0, 3).join(', ')}${countries.size > 3 ? '...' : ''})\n` +
         `💻 Client Mix: ${clientSummary}\n` +
-        `🎯 Stake: Avg ${(candidates.reduce((sum, v) => sum + v.stakePercentage, 0) / candidates.length).toFixed(3)}% network stake per validator`,
+        `🎯 Stake: Avg ${avgStakePercentage}% network stake per validator`,
       confidence: 0.85,
       expectedImpact: {
         nakamotoCoefficient: {
