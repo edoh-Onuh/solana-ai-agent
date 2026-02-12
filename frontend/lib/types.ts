@@ -36,6 +36,9 @@ export interface ValidatorMetrics {
   clientVersion?: string;
   clientType?: 'agave' | 'jito' | 'firedancer' | 'unknown';
   
+  // Community
+  isSuperteamValidator?: boolean;
+  
   // Scoring
   decentralizationScore?: number;
   performanceScore?: number;

@@ -1146,7 +1146,6 @@ NODE_ENV=production
 ### Video Demo
 **YouTube**: [3-minute walkthrough - Coming Soon]
 
-### Screenshots
 
 #### Dashboard View
 *Full network health overview with real-time metrics*
