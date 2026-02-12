@@ -34,6 +34,9 @@ export default function Home() {
   // Calculate Superteam stats
   const superteamStats = useMemo(() => {
     const superteamValidators = validators.filter(v => isSuperteamValidator(v.pubkey));
+    console.log('Superteam validators found:', superteamValidators.length);
+    console.log('Checking for Lantern validator:', validators.find(v => v.pubkey === 'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ'));
+    
     const totalStake = superteamValidators.reduce((sum, v) => sum + v.activatedStake, 0);
     const avgCommission = superteamValidators.length > 0
       ? superteamValidators.reduce((sum, v) => sum + v.commission, 0) / superteamValidators.length
@@ -148,6 +151,13 @@ export default function Home() {
         ...v,
         isSuperteamValidator: isSuperteamValidator(v.pubkey),
       }));
+      
+      // Log first 10 validator pubkeys to help identify which ones to add to Superteam list
+      console.log('First 10 validators by stake:', data.validators.slice(0, 10).map((v: any) => ({
+        pubkey: v.pubkey,
+        name: v.name,
+        stake: (v.activatedStake / 1e9).toFixed(0) + ' SOL'
+      })));
       
       setValidators(validatorsWithSuperteam);
       setMetrics(data.metrics);
