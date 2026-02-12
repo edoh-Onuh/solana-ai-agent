@@ -11,10 +11,8 @@
  */
 
 export const SUPERTEAM_VALIDATORS: string[] = [
-  // Add Superteam validator public keys here
-  // Example: '7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2',
-  
-  // Placeholder validators - Replace with actual Superteam validator pubkeys
+  // Superteam community validators
+  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ',
 ];
 
 /**
