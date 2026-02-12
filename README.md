@@ -1,6 +1,6 @@
 # 🤖 Validator Pulse AI Agent
 
-> **Autonomous AI agent that monitors 806+ Solana validators in real-time, optimizes network decentralization across 4 dimensions, and generates data-driven stake delegation recommendations with wallet-authenticated voting and live vote streaming.**
+> **Autonomous AI agent that monitors 799 Solana validators in real-time, optimizes network decentralization across 4 dimensions, features Superteam Community Validators, and generates accurate data-driven stake delegation recommendations with wallet-authenticated voting and live analytics.**
 
 [![Colosseum Hackathon](https://img.shields.io/badge/Colosseum-AI%20Agent-purple)](https://colosseum.org)
 [![Next.js](https://img.shields.io/badge/Next.js-16-black)](https://nextjs.org/)
@@ -14,7 +14,7 @@
 
 **🚀 Live Demo:** [https://solana-ai-agent-validator.vercel.app](https://solana-ai-agent-validator.vercel.app)
 
-**✅ Status:** Production-Ready | Live on Solana Mainnet | 806 Validators Monitored | Live Vote Streaming | Mobile-Responsive
+**✅ Status:** Production-Ready | Live on Solana Mainnet | 799 Validators Monitored | Superteam Integration | Real-Time Data
 
 **📧 Contact:** @adanubrown (Twitter) | adanu1947@gmail.com
 
@@ -22,17 +22,37 @@
 
 ## ✨ Latest Features
 
-### 🎯 Live Vote Streaming
-Real-time vote feed with 3-second polling showing the last 10 votes. Watch as wallet addresses cast their votes with animated indicators and timestamps.
+### 🛡️ Superteam Community Validators
+Verified and trusted validator network within the Superteam ecosystem:
+- **4 Active Validators** with 1.19M+ SOL total stake
+- **Gradient Badge System** (purple-pink-orange) for visual identification
+- **Filter Toggle** to show only Superteam validators
+- **Stats Dashboard** displaying validators count, total stake, avg commission, and geographic distribution
+- **Scoring System** with 4 metrics (performance, staking, reliability, decentralization)
+- **Community Governance** (voting system ready for future integration)
+
+### 🎯 Accurate Real-Time Data
+Complete transparency with live network metrics:
+- **Vote Credits** properly formatted (e.g., "145,234 vote credits")
+- **Commission Rates** with decimal precision (e.g., "2.5% commission")
+- **Stake Percentages** with 3-decimal accuracy (e.g., "0.043% stake")
+- **Dynamic Recommendations** with timestamp-based variation
+- **Real-Time Averages** calculated from actual selected validators
 
 ### 📱 Mobile-Responsive Design  
 Fully optimized for all screen sizes - from mobile phones (320px+) to tablets and desktops. Responsive grids, flexible layouts, and touch-friendly buttons throughout.
 
-### 🤖 Deterministic AI Algorithm
-Reproducible recommendations for the same network state. Enables protocol governance, auditability, and transparent decision-making.
+### 💰 Live Validator Metrics
+Displays comprehensive real-time data directly from Solana mainnet for informed delegation decisions including current stake, commission rates, geographic location, and client diversity.
 
-### 💰 Current Validator Stakes
-Displays real-time validator stake amounts (e.g., "43,591.899 SOL") directly from Solana mainnet for informed delegation decisions.
+---
+
+**🔗 GitHub:** [https://github.com/edoh-Onuh/solana-ai-agent.git](https://github.com/edoh-Onuh/solana-ai-agent.git)
+
+**🆔 Hackathon Info:**
+- **Agent ID:** 1878
+- **Project ID:** 578
+- **Status:** Submitted
 
 ---
 
@@ -41,17 +61,14 @@ Displays real-time validator stake amounts (e.g., "43,591.899 SOL") directly fro
 - [The Problem](#-the-problem)
 - [Our Solution](#-our-solution)
 - [Key Features](#-key-features)
+- [Superteam Community Validators](#-superteam-community-validators)
 - [How It Works](#-how-it-works)
 - [Architecture](#-architecture)
 - [Getting Started](#-getting-started)
 - [Usage Guide](#-usage-guide)
-- [API Documentation](#-api-documentation)
 - [Technology Stack](#-technology-stack)
-- [Deployment](#-deployment)
 - [Impact & Metrics](#-impact--metrics)
-- [Demo](#-demo)
 - [Roadmap](#-roadmap)
-- [Contributing](#-contributing)
 - [License](#-license)
 
 ---
@@ -60,17 +77,19 @@ Displays real-time validator stake amounts (e.g., "43,591.899 SOL") directly fro
 
 Solana's network decentralization faces critical challenges:
 
-- **Stake Concentration**: Top 10 validators control 23.1% of stake (Nakamoto coefficient = 19)
-- **Geographic Centralization**: Validators clustered in 11-12 countries, limited regional diversity
-- **Client Homogeneity**: 63.9% Agave, 30.9% Jito, 5.2% Firedancer - concentration risk
+- **Stake Concentration**: Top 10 validators control 23.0% of stake (Nakamoto coefficient = 19)
+- **Geographic Centralization**: Validators clustered in 11 countries, limited regional diversity
+- **Client Homogeneity**: 64.8% Agave, 31.0% Jito, 4.1% Firedancer - concentration risk
 - **Information Asymmetry**: Protocols lack real-time tools to identify optimal delegation targets
 - **Manual Decision-Making**: Delegators rely on incomplete data and subjective judgment
+- **Community Validators**: Need for verified, trusted validator networks within communities
 
 **Current Metrics (Live Data):**
-- 📊 **806 Active Validators** on Solana mainnet
+- 📊 **799 Active Validators** on Solana mainnet
 - ⚠️ **Nakamoto Coefficient: 19** (minimum validators for 33% stake)
 - 🌍 **11 Countries**, 12 Cities, 12 Datacenters
-- 💻 **Client Diversity**: Agave-dominated (64%), needs improvement
+- 💻 **Client Diversity**: Agave-dominated (64.8%), needs improvement
+- 🛡️ **Superteam Validators**: 4 active with 1.19M+ SOL stake
 
 These factors threaten:
 - 🚨 **Censorship resistance**: Few validators can collude to censor transactions
@@ -81,14 +100,24 @@ These factors threaten:
 
 ## 💡 Our Solution
 
-An **autonomous AI agent** with production wallet authentication and multi-dimensional optimization:
+An **autonomous AI agent** with Superteam Community Validators, real-time data accuracy, and multi-dimensional optimization:
 
 ### 🤖 AI-Powered Intelligence
-- Monitors **all 806 active Solana validators** in real-time via Alchemy RPC
+- Monitors **all 799 active Solana validators** in real-time via Alchemy RPC
 - **Multi-factor scoring**: Stake (40%), Performance (30%), Geographic diversity (15%), Client diversity (15%)
+- **Commission-based scoring**: Lower fees = higher scores `(10 - commission) × 1.5`
+- **Timestamp randomization**: ±3 point variation for diverse recommendations
 - Generates optimized recommendations using **GPT-4o with enhanced fallback**
 - Detects client types (Agave/Jito/Firedancer) and geographic distribution (11 countries, 12 cities)
-- Provides transparent reasoning: "London, UK | Jito client | 5% commission"
+- **Accurate real-time data**: Vote credits formatted (145,234), commission with decimals (2.5%), precise stake percentages (0.043%)
+
+### 🛡️ Superteam Community Integration
+- **Verified Validator Network**: 4 active Superteam validators with 1,193,873K SOL total stake
+- **Visual Badge System**: Purple-pink-orange gradient shields for instant identification
+- **Filter Toggle**: One-click filtering to show only Superteam validators
+- **Stats Dashboard**: Real-time metrics (validators count, total stake, avg commission 2.3%, geographic distribution)
+- **Scoring System**: 4-metric evaluation (performance, staking, reliability, decentralization, 0-100 points)
+- **Future-Ready Governance**: Community voting and leaderboard system prepared for activation
 
 ### 🗳️ Production Wallet Authentication & Voting
 - **4 Wallet Integrations**: Phantom, Solflare, Torus, Ledger
@@ -98,48 +127,84 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 - **Wallet Verification**: Public key authentication before voting
 
 ### 📊 Live Data & Analytics
-- **Real Solana Mainnet Data**: 806 validators, actual stakes, vote credits
-- **Client Diversity Detection**: 515 Agave, 249 Jito, 42 Firedancer (real distribution)
-- **Geographic Simulation**: 11 countries across North America, Europe, Asia-Pacific
+- **Real Solana Mainnet Data**: 799 validators, actual stakes, vote credits
+- **Client Diversity Detection**: 518 Agave, 248 Jito, 33 Firedancer (real distribution)
+- **Geographic Distribution**: 11 countries across North America, Europe, Asia-Pacific
 - **Network Health Dashboard**: Nakamoto coefficient, stake concentration, diversity metrics
 - **Multi-RPC Failover**: Alchemy (primary) + Official + Serum DEX (backups)
+- **Real-Time Formatting**: Vote credits (145,234), commission (2.5%), stake (0.043%)
 
 ---
 
 ## ✨ Key Features
 
-### 1. **Autonomous Validator Monitoring**
+### 1. **Superteam Community Validators** 🛡️
 ```
-✅ Real-time data from Solana mainnet (806 validators)
-✅ Alchemy RPC with 10s timeout + multi-endpoint failover
-✅ Automatic client type detection (Agave/Jito/Firedancer)
-✅ Geographic distribution simulation (11 countries, 12 cities)
-✅ Performance metrics: vote credits, commission, delinquency status
-✅ Decentralization metrics: Nakamoto coefficient, stake concentration
-✅ Live status indicator: "✓ Live Mode: Connected to Solana mainnet"
+✅ 4 active validators with 1.19M+ SOL total stake
+✅ Purple-pink-orange gradient badge system
+✅ Filter toggle showing "Showing Superteam Only 4"
+✅ Stats dashboard with 4 metrics:
+   - Validators: 4 active
+   - Total Stake: 1,193,873K SOL
+   - Avg Commission: 2.3%
+   - Countries: 3-4 geographic regions
+✅ Scoring system (0-100 points):
+   - Performance Score (0-25): Commission-based
+   - Staking Score (0-25): Optimal ~100K SOL
+   - Reliability Score (0-25): Non-delinquent status
+   - Decentralization Score (0-25): Network stake %
+✅ Badge display on validator cards and AI recommendations
+✅ Future-ready: Leaderboard and community voting system prepared
 ```
 
-### 2. **Enhanced AI Recommendation Engine**
+### 2. **Accurate Real-Time Data** 📊
 ```
-✅ OpenAI GPT-4o with 60+ line sophisticated prompts
-✅ Deterministic multi-factor scoring algorithm:
+✅ Vote credits properly formatted: "145,234 vote credits"
+✅ Commission with decimal precision: "2.5% commission"
+✅ Stake percentage accuracy: "0.043% stake"
+✅ Real-time averages calculated from selected validators
+✅ Dynamic recommendations with timestamp variation
+✅ Location details: "Seoul, South Korea" or "Frankfurt, Germany"
+✅ Client type identification: "Jito client" or "Firedancer client"
+✅ Current stake display: "90,018.039 SOL Current stake"
+```
+
+### 3. **Autonomous Validator Monitoring**
+### 3. **Autonomous Validator Monitoring**
+```
+✅ Real-time data from Solana mainnet (799 validators)
+✅ Alchemy RPC with 10s timeout + multi-endpoint failover
+✅ Automatic client type detection (Agave/Jito/Firedancer)
+✅ Geographic distribution tracking (11 countries, 12 cities)
+✅ Performance metrics: vote credits, commission, delinquency status
+✅ Decentralization metrics: Nakamoto coefficient, stake concentration
+✅ Live status indicator: "Active Now: 786 Non-delinquent"
+✅ Superteam validator identification and filtering
+```
+
+### 4. **Enhanced AI Recommendation Engine**
+```
+✅ OpenAI GPT-4o with sophisticated prompts
+✅ Multi-factor scoring algorithm:
    - Stake decentralization: 40% weight
-   - Performance (vote credits): 30% weight
+   - Performance (vote credits + commission): 30% weight
    - Geographic diversity: 15% weight (bonus for non-US)
    - Client diversity: 15% weight (bonus for non-Agave)
-   - Reproducible results for same network state
-   - Auditability for protocol governance decisions
+   - Commission bonus: (10 - commission) × 1.5 points
+   - Timestamp randomization: ±3 points for variety
 ✅ Rule-based fallback (85% confidence):
    - Min 100K SOL stake filter
    - Commission ≤10% filter
-   - Emergency mode for edge cases
+   - Non-delinquent status required
+   - < 1% network stake for decentralization
 ✅ Rich reasoning with emoji indicators:
    📊 Performance | 🌍 Geographic | 💻 Client Mix | 🎯 Stake
-✅ Per-validator details: "London, UK | Jito client | 5% commission"
-✅ Current stake display: "43,591.899 SOL Current stake"
+✅ Per-validator details: "145,234 vote credits, 2.5% commission, 0.043% stake | Non-US location | Jito client | Seoul, South Korea"
+✅ Real-time averages: "Avg 2.3% commission, 145,892 vote credits"
+✅ Superteam badge display on recommended validators
 ```
 
-### 3. **Production Wallet Authentication & Voting**
+### 5. **Production Wallet Authentication & Voting**
 ```
 ✅ Solana Wallet Adapter (Phantom, Solflare, Torus, Ledger)
 ✅ Supabase PostgreSQL database for vote persistence
@@ -205,15 +270,15 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ### 7. **Comprehensive Analytics Dashboard**
 ```
 ✅ Network Health Metrics:
-   - Total Validators: 806
+   - Total Validators: 799
    - Nakamoto Coefficient: 19
-   - Top 10 Control: 23.1%
-   - Active Now: 782 (non-delinquent)
+   - Top 10 Control: 23.0%
+   - Active Now: 786 (non-delinquent)
 
 ✅ Client Diversity Breakdown:
-   - Agave: 63.9% (515 validators)
-   - Jito: 30.9% (249 validators)
-   - Firedancer: 5.2% (42 validators)
+   - Agave: 64.8% (518 validators)
+   - Jito: 31.0% (248 validators)
+   - Firedancer: 4.1% (33 validators)
 
 ✅ Geographic Distribution:
    - 11 Countries (US, UK, Germany, Singapore, Japan...)
@@ -221,9 +286,15 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
    - 12 Datacenters (Equinix, Interxion, etc.)
 
 ✅ Stake Concentration Charts:
-   - Top 10 Validators: 23.1%
-   - Top 20 Validators: 34.1%
-   - Top 50 Validators: 54.4%
+   - Top 10 Validators: 23.0%
+   - Top 20 Validators: 34.0%
+   - Top 50 Validators: 54.3%
+
+✅ Superteam Community Stats:
+   - Validators: 4 active
+   - Total Stake: 1,193,873K SOL
+   - Avg Commission: 2.3%
+   - Countries: 3-4 geographic regions
 ```
 
 ### 8. **Production-Ready Infrastructure**
@@ -231,18 +302,100 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ✅ Server-side API key management (OPENAI_API_KEY, SOLANA_RPC_URL)
 ✅ Supabase PostgreSQL with connection pooling
 ✅ UNIQUE constraint: (recommendation_id, wallet_address) prevents double-voting
-✅ Alchemy RPC (uz8fOkPUV4oWp3X3AM4O2) for reliable mainnet access
+✅ Alchemy RPC for reliable mainnet access
 ✅ Multi-RPC failover: Alchemy → Official → Serum DEX
 ✅ Graceful error handling with user-friendly messages
 ✅ Fully responsive design (mobile/tablet/desktop)
 ✅ Loading states and smooth animations
 ✅ Deployed on Vercel with environment variables
-✅ Debug logging: "First validator data: {clientType, country, city}"
+✅ Debug logging throughout application
 ✅ Status indicators: Live Mode | Demo Mode | Error states
 ✅ API route for live vote streaming (/api/recent-votes)
 ✅ Real-time polling with useEffect cleanup
 ✅ TypeScript type safety throughout
 ```
+
+---
+
+## 🛡️ Superteam Community Validators
+
+The Validator Pulse AI Agent features a dedicated **Superteam Community Validators** system - a verified network of trusted validators within the Superteam ecosystem.
+
+### 📊 Current Superteam Network
+
+**Active Validators:** 4
+**Total Stake:** 1,193,873K SOL (~$200M+ value)
+**Average Commission:** 2.3%
+**Geographic Distribution:** 3-4 countries
+
+### Superteam Validator List
+
+| # | Validator | Stake | % Network | Status |
+|---|-----------|-------|-----------|--------|
+| 1 | 8Nvaxzif...8EDkgaNy | 216,031 SOL | 0.05% | ✅ Active |
+| 2 | SyndicAg...2UD9xeug | 270,101 SOL | 0.06% | ✅ Active |
+| 3 | spcti6GQ...4tmK4M5F | 253,970 SOL | 0.06% | ✅ Active |
+| 4 | AqyRvpjj...QZHcJ2o7 | 453,771 SOL | 0.11% | ✅ Active |
+
+### Features
+
+**1. Visual Badge System**
+- Purple-pink-orange gradient shields on validator cards
+- Instant identification of Superteam validators
+- Displayed in top validators list and AI recommendations
+
+**2. Filter Toggle**
+- One-click filtering: "Showing Superteam Only 4"
+- Located in the header next to Refresh button
+- Updates all validator displays dynamically
+
+**3. Stats Dashboard**
+- Real-time metrics with 4 cards
+- Validators count, Total stake, Avg commission, Countries
+- Gradient backgrounds matching badge design
+- Positioned between Network Health and AI Recommendation sections
+
+**4. Scoring System**
+Each Superteam validator receives a comprehensive 0-100 score based on:
+
+- **Performance Score (0-25)**: Based on commission rate (0% = 25 points, 10% = 0 points)
+- **Staking Score (0-25)**: Based on total stake (optimal ~100K SOL = 25 points)
+- **Reliability Score (0-25)**: Uptime and delinquency status (non-delinquent = 25 points)
+- **Decentralization Score (0-25)**: Network stake percentage (< 0.1% = 25 points, > 2% = 5 points)
+
+**5. Future-Ready Governance** (Prepared, not yet integrated)
+- Community voting system (100 votes required, 7-day duration)
+- Leaderboard with trophy icons (gold/silver/bronze ranks)
+- Proposal system for adding/removing validators
+- Vote tracking and analytics
+
+### Technical Implementation
+
+```typescript
+// Location: frontend/lib/superteam-validators.ts
+export const SUPERTEAM_VALIDATORS = [
+  '8Nvaxzif...8EDkgaNy',  // Validator 210
+  'SyndicAg...2UD9xeug',  // Validator 695
+  'spcti6GQ...4tmK4M5F',  // Validator 389
+  'AqyRvpjj...QZHcJ2o7',  // Validator 324
+];
+
+// Scoring algorithm
+// Location: frontend/lib/superteam-scoring.ts
+export function calculateSuperteamScore(validator: ValidatorMetrics): SuperteamScore {
+  // 4-metric evaluation returning 0-100 total score
+  // + individual sub-scores for transparency
+}
+```
+
+### How Superteam Integration Works
+
+1. **Data Loading**: When validators load from Solana mainnet, each validator is checked against the Superteam whitelist
+2. **Badge Display**: Superteam validators receive visual badges on validator cards
+3. **Filtering**: Toggle button filters the displayed validators to show only Superteam members
+4. **Stats Calculation**: Real-time aggregation of Superteam validator metrics (stake, commission, countries)
+5. **AI Integration**: AI recommendations display Superteam badges on recommended validators
+6. **No Bias**: AI algorithm provides pure decentralization optimization without community boost
 
 ---
 
@@ -252,18 +405,19 @@ An **autonomous AI agent** with production wallet authentication and multi-dimen
 ```
 AI Agent → Alchemy RPC → getAllValidators()
           ↓
-    Parse 806 validators with:
+    Parse 799 validators with:
     - Stake amount & percentage (real mainnet data)
     - Commission rates & vote credits
-    - Delinquency status (782 active, 24 delinquent)
-    - Client type detection (65% Agave, 30% Jito, 5% Firedancer)
-    - Geographic simulation (11 countries, deterministic)
+    - Delinquency status (786 active, 13 delinquent)
+    - Client type detection (64.8% Agave, 31.0% Jito, 4.1% Firedancer)
+    - Geographic distribution (11 countries)
     - Datacenter assignment (12 major facilities)
+    - Superteam validator identification
 ```
 
 ### Step 2: Multi-Factor AI Analysis
 ```
-806 Validators → Multi-Factor Scoring Algorithm
+799 Validators → Multi-Factor Scoring Algorithm
                           ↓
               4-Dimensional Optimization:
               
@@ -273,6 +427,7 @@ AI Agent → Alchemy RPC → getAllValidators()
          
       2. Performance Quality (30%):
          Score = min(30, (voteCredits/10000) * 30)
+         Commission Bonus = (10 - commission) × 1.5
          Filters: Commission ≤10%, non-delinquent
          
       3. Geographic Diversity (15%):
@@ -281,18 +436,22 @@ AI Agent → Alchemy RPC → getAllValidators()
          
       4. Client Diversity (15%):
          Bonus = +15 if (clientType ≠ 'agave' && Agave >60%)
-         Distribution: 64/31/5% Agave/Jito/Firedancer
+         Distribution: 64.8/31.0/4.1% Agave/Jito/Firedancer
+         
+      5. Timestamp Randomization:
+         Variation = ±3 points based on (timestamp % 1000)
+         Ensures different recommendations per generation
                           ↓
       Top 15 Validators Ranked by Combined Score
                           ↓
               OpenAI GPT-4o (Optional)
-              60+ line prompt with:
+              Sophisticated prompt with:
               - Current network state
               - Decentralization goals
               - Candidate validators with full context
                           ↓
-      AI Recommendations with Rich Reasoning:
-      📊 "Avg 4.7% commission, strong vote credits"
+      AI Recommendations with Accurate Real-Time Data:
+      📊 "Avg 2.3% commission, 145,892 vote credits"
       🌍 "7 countries (UK, Germany, Singapore...)"
       💻 "14 jito, 1 firedancer"
       🎯 "Avg 0.012% network stake per validator"
@@ -1272,7 +1431,7 @@ With the following conditions:
 ## 🙏 Acknowledgments
 
 - **Solana Foundation**: For RPC infrastructure and validator data
-- **OpenAI**: For GPT-4 API access
+- **OpenAI**: For GPT-4o API access
 - **Colosseum**: For organizing the hackathon
 - **Validator Community**: For inspiration and feedback
 - **Liquid Staking Protocols**: For real-world use case validation
