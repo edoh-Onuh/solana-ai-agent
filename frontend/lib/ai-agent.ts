@@ -1,7 +1,6 @@
 // AI Agent for validator analysis and recommendations
 import OpenAI from 'openai';
 import { ValidatorMetrics, AIRecommendation, ValidatorRecommendation, DecentralizationMetrics } from './types';
-import { isSuperteamValidator, SUPERTEAM_SCORE_BOOST, SUPERTEAM_MIN_PERCENTAGE } from './superteam-validators';
 
 // Only initialize OpenAI on server-side
 const getOpenAIClient = () => {
@@ -88,12 +87,6 @@ Format as JSON:
     // Decentralization scoring
     if (validator.stakePercentage < 0.5) score += 10;
     if (validator.country && validator.country !== 'US') score += 5;
-
-    // Superteam Community Bonus
-    if (isSuperteamValidator(validator.pubkey)) {
-      score += SUPERTEAM_SCORE_BOOST;
-      recommendations.push('Superteam Community validator - trusted by the community');
-    }
 
     // Identify risks
     if (validator.stakePercentage > 2) {
@@ -286,6 +279,9 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
     const agaveCount = validators.filter(v => v.clientType === 'agave').length;
     const agavePercentage = agaveCount / totalValidators;
     
+    // Add randomization seed based on current timestamp for variation
+    const randomSeed = Date.now() % 1000;
+    
     const candidates = validators
       .filter(v => !v.delinquent) // Must be active
       .filter(v => v.activatedStake > 100_000_000_000) // Min 100K SOL (active validators)
@@ -293,7 +289,7 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
       .filter(v => v.stakePercentage > 0.01) // Not too small (meaningful validators)
       .filter(v => v.commission <= 10) // Reasonable commission
       .sort((a, b) => {
-        // Multi-factor scoring for diversity
+        // Multi-factor scoring for diversity with randomization
         let aScore = 0;
         let bScore = 0;
         
@@ -301,9 +297,13 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
         aScore += (1 - a.stakePercentage / 100) * 40;
         bScore += (1 - b.stakePercentage / 100) * 40;
         
-        // 2. Performance (30% weight)
+        // 2. Performance (30% weight) - with real-time data
         aScore += Math.min(30, (a.voteCredits / 10000) * 30);
         bScore += Math.min(30, (b.voteCredits / 10000) * 30);
+        
+        // Add commission bonus (lower commission = higher score)
+        aScore += (10 - a.commission) * 1.5;
+        bScore += (10 - b.commission) * 1.5;
         
         // 3. Geographic diversity bonus (15% weight)
         if (a.country !== 'United States' && usConcentration > 0.3) aScore += 15;
@@ -313,28 +313,15 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
         if (a.clientType !== 'agave' && agavePercentage > 0.6) aScore += 15;
         if (b.clientType !== 'agave' && agavePercentage > 0.6) bScore += 15;
         
-        // 5. Superteam Community Bonus
-        if (isSuperteamValidator(a.pubkey)) aScore += SUPERTEAM_SCORE_BOOST;
-        if (isSuperteamValidator(b.pubkey)) bScore += SUPERTEAM_SCORE_BOOST;
+        // 5. Add small randomization for variety (±3 points)
+        const aRandom = ((a.pubkey.charCodeAt(0) + randomSeed) % 7) - 3;
+        const bRandom = ((b.pubkey.charCodeAt(0) + randomSeed) % 7) - 3;
+        aScore += aRandom;
+        bScore += bRandom;
         
         return bScore - aScore;
       })
       .slice(0, 15);
-
-    // Ensure minimum Superteam representation
-    const superteamCount = candidates.filter(v => isSuperteamValidator(v.pubkey)).length;
-    const minSuperteamNeeded = Math.ceil(candidates.length * (SUPERTEAM_MIN_PERCENTAGE / 100));
-    
-    if (superteamCount < minSuperteamNeeded) {
-      // Add more Superteam validators
-      const superteamValidators = validators
-        .filter(v => !v.delinquent && isSuperteamValidator(v.pubkey))
-        .filter(v => !candidates.some(c => c.pubkey === v.pubkey))
-        .slice(0, minSuperteamNeeded - superteamCount);
-      
-      // Replace lowest scoring non-Superteam validators
-      candidates = [...candidates.slice(0, -(minSuperteamNeeded - superteamCount)), ...superteamValidators];
-    }
 
     if (candidates.length === 0) {
       // Emergency fallback: just pick non-delinquent validators
