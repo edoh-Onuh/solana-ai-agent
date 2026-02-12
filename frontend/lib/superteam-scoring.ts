@@ -48,7 +48,7 @@ export function calculateSuperteamScore(validator: ValidatorMetrics): SuperteamS
 
   return {
     pubkey: validator.pubkey,
-    name: validator.name,
+    name: validator.name || 'Unknown Validator',
     totalScore: Math.round(totalScore),
     performanceScore: Math.round(performanceScore),
     stakingScore: Math.round(stakingScore),
