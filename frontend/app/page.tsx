@@ -143,7 +143,13 @@ export default function Home() {
         throw new Error(data.error || 'Unknown error');
       }
       
-      setValidators(data.validators);
+      // Mark Superteam validators
+      const validatorsWithSuperteam = data.validators.map((v: ValidatorMetrics) => ({
+        ...v,
+        isSuperteamValidator: isSuperteamValidator(v.pubkey),
+      }));
+      
+      setValidators(validatorsWithSuperteam);
       setMetrics(data.metrics);
       setDataSource(data.dataSource || 'live');
       
