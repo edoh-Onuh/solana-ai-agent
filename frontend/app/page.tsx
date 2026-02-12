@@ -7,7 +7,7 @@ import { MetricsCharts } from '@/components/MetricsCharts';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
 import { SuperteamBadge, SuperteamStats, SuperteamFilter } from '@/components/SuperteamComponents';
-import { isSuperteamValidator } from '@/lib/superteam-validators';
+import { isSuperteamValidator, getSuperteamValidatorInfo, SUPERTEAM_VALIDATORS } from '@/lib/superteam-validators';
 
 interface VoteDisplay {
   id: string;
@@ -54,7 +54,10 @@ export default function Home() {
   // Filter validators based on Superteam toggle
   const displayedValidators = useMemo(() => {
     if (showSuperteamOnly) {
-      return validators.filter(v => isSuperteamValidator(v.pubkey));
+      const superteamSet = new Set(SUPERTEAM_VALIDATORS);
+      return validators
+        .filter(v => superteamSet.has(v.pubkey))
+        .sort((a, b) => SUPERTEAM_VALIDATORS.indexOf(a.pubkey) - SUPERTEAM_VALIDATORS.indexOf(b.pubkey));
     }
     return validators;
   }, [validators, showSuperteamOnly]);
@@ -459,36 +462,46 @@ export default function Home() {
 
               <h3 className="text-white font-semibold text-base sm:text-lg">Recommended Validators:</h3>
               <div className="grid gap-2 sm:gap-3">
-                {recommendation.validators.slice(0, 5).map((v, i) => (
-                  <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
-                    <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
-                      <div className="flex-1 min-w-0">
-                        <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-2 flex-wrap">
-                          {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
-                          {isSuperteamValidator(v.pubkey) && (
-                            <SuperteamBadge size="sm" />
-                          )}
+                {recommendation.validators.slice(0, 5).map((v, i) => {
+                  const superteamInfo = getSuperteamValidatorInfo(v.pubkey);
+                  return (
+                    <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
+                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-2 flex-wrap">
+                            {superteamInfo?.logoUrl && (
+                              <img
+                                src={superteamInfo.logoUrl}
+                                alt={`${superteamInfo.name} logo`}
+                                className="w-5 h-5 rounded-full border border-purple-400/60"
+                              />
+                            )}
+                            {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
+                            {isSuperteamValidator(v.pubkey) && (
+                              <SuperteamBadge size="sm" />
+                            )}
+                          </div>
+                          <div className="text-purple-300 text-xs sm:text-sm">{superteamInfo?.name || v.name}</div>
                         </div>
-                        <div className="text-purple-300 text-xs sm:text-sm">{v.name}</div>
+                        <div className="text-left sm:text-right">
+                          <div className="text-white font-semibold text-sm sm:text-base">
+                            {((v.currentStake || 0) / 1e9).toLocaleString()} SOL
+                          </div>
+                          <div className="text-purple-300 text-xs">
+                            Current stake
+                          </div>
+                          <div className={`text-xs ${
+                            v.riskLevel === 'low' ? 'text-green-400' :
+                            v.riskLevel === 'medium' ? 'text-yellow-400' : 'text-red-400'
+                          }`}>
+                            {v.riskLevel} risk
+                          </div>
+                        </div>
                       </div>
-                      <div className="text-left sm:text-right">
-                        <div className="text-white font-semibold text-sm sm:text-base">
-                          {((v.currentStake || 0) / 1e9).toLocaleString()} SOL
-                        </div>
-                        <div className="text-purple-300 text-xs">
-                          Current stake
-                        </div>
-                        <div className={`text-xs ${
-                          v.riskLevel === 'low' ? 'text-green-400' :
-                          v.riskLevel === 'medium' ? 'text-yellow-400' : 'text-red-400'
-                        }`}>
-                          {v.riskLevel} risk
-                        </div>
-                      </div>
+                      <p className="text-purple-200 text-sm">{v.reason}</p>
                     </div>
-                    <p className="text-purple-200 text-sm">{v.reason}</p>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
 
               {/* Voting Interface */}
@@ -605,30 +618,40 @@ export default function Home() {
             {showSuperteamOnly ? 'Superteam Community Validators' : 'Top Validators by Stake'}
           </h2>
           <div className="space-y-2">
-            {displayedValidators.slice(0, 10).map((validator, index) => (
-              <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
-                <div className="flex items-center gap-4">
-                  <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
-                  <div>
-                    <div className="text-white font-mono text-sm flex items-center gap-2">
-                      {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
-                      {isSuperteamValidator(validator.pubkey) && (
-                        <SuperteamBadge size="sm" />
-                      )}
+            {displayedValidators.slice(0, 10).map((validator, index) => {
+              const superteamInfo = getSuperteamValidatorInfo(validator.pubkey);
+              return (
+                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
+                    <div>
+                      <div className="text-white font-mono text-sm flex items-center gap-2">
+                        {superteamInfo?.logoUrl && (
+                          <img
+                            src={superteamInfo.logoUrl}
+                            alt={`${superteamInfo.name} logo`}
+                            className="w-5 h-5 rounded-full border border-purple-400/60"
+                          />
+                        )}
+                        {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
+                        {isSuperteamValidator(validator.pubkey) && (
+                          <SuperteamBadge size="sm" />
+                        )}
+                      </div>
+                      <div className="text-purple-300 text-xs">{superteamInfo?.name || validator.name}</div>
                     </div>
-                    <div className="text-purple-300 text-xs">{validator.name}</div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-semibold">
+                      {(validator.activatedStake / 1e9).toFixed(0).toLocaleString()} SOL
+                    </div>
+                    <div className="text-purple-300 text-sm">
+                      {validator.stakePercentage.toFixed(2)}% of network
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-white font-semibold">
-                    {(validator.activatedStake / 1e9).toFixed(0).toLocaleString()} SOL
-                  </div>
-                  <div className="text-purple-300 text-sm">
-                    {validator.stakePercentage.toFixed(2)}% of network
-                  </div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       </main>
