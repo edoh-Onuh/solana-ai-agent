@@ -30,17 +30,14 @@ export interface SuperteamValidatorInfo {
 }
 
 export const SUPERTEAM_VALIDATOR_INFO: Record<string, SuperteamValidatorInfo> = {
-  // Add detailed info for each Superteam validator
-  // Example:
-  // '7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2': {
-  //   pubkey: '7Np41oeYqPefeNQEHSv1UDhYrehxin3NStELsSKCT4K2',
-  //   name: 'Superteam Validator UK',
-  //   region: 'United Kingdom',
-  //   specialty: 'High Performance',
-  //   joinedDate: '2024-01',
-  //   twitterHandle: '@superteam',
-  //   website: 'https://superteam.fun',
-  // },
+  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ': {
+    pubkey: 'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ',
+    name: 'Lantern',
+    region: 'Rotterdam, Netherlands',
+    specialty: 'High Performance & Decentralization',
+    joinedDate: '2024-03',
+    website: 'https://www.lantern.one/',
+  },
 };
 
 /**
