@@ -5,7 +5,7 @@ import { ValidatorMetrics } from '@/lib/types';
 
 // Multiple RPC endpoints to try (ordered by preference)
 const RPC_ENDPOINTS = [
-  process.env.SOLANA_RPC_URL || 'https://solana-mainnet.g.alchemy.com/v2/demo',
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || process.env.SOLANA_RPC_URL || 'https://johna-k3cr1v-fast-mainnet.helius-rpc.com',
   'https://johna-k3cr1v-fast-mainnet.helius-rpc.com', // Helius high-performance RPC
   'https://api.mainnet-beta.solana.com',
   'https://solana-api.projectserum.com',
