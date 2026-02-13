@@ -1,8 +1,19 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { recordVote, getVotesByRecommendation } from '@/lib/supabase';
+import { recordVote, getVotesByRecommendation, supabaseEnabled } from '@/lib/supabase';
 
 export async function POST(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!supabaseEnabled) {
+      return NextResponse.json(
+        { 
+          error: 'Voting is currently disabled. Supabase database not configured.',
+          details: 'Please contact the administrator to enable voting features.'
+        },
+        { status: 503 } // Service Unavailable
+      );
+    }
+
     const body = await request.json();
     const { recommendationId, walletAddress, voteType } = body;
 
@@ -26,7 +37,10 @@ export async function POST(request: NextRequest) {
 
     if (!vote) {
       return NextResponse.json(
-        { error: 'Failed to record vote' },
+        { 
+          error: 'Failed to record vote. Database operation failed.',
+          details: 'Please try again or contact support if the issue persists.'
+        },
         { status: 500 }
       );
     }
@@ -50,6 +64,18 @@ export async function POST(request: NextRequest) {
 
 export async function GET(request: NextRequest) {
   try {
+    // Check if Supabase is configured
+    if (!supabaseEnabled) {
+      return NextResponse.json(
+        { 
+          approves: 0,
+          rejects: 0,
+          message: 'Voting disabled - Supabase not configured'
+        },
+        { status: 200 }
+      );
+    }
+
     const { searchParams } = new URL(request.url);
     const recommendationId = searchParams.get('recommendationId');
 

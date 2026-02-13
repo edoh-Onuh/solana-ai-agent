@@ -304,11 +304,15 @@ export default function Home() {
         }),
       });
       
-      if (!response.ok) {
-        throw new Error('Failed to record vote');
-      }
-      
       const data = await response.json();
+      
+      if (!response.ok) {
+        // Handle specific error messages from the server
+        if (response.status === 503) {
+          throw new Error(data.error || 'Voting is currently disabled');
+        }
+        throw new Error(data.error || 'Failed to record vote');
+      }
       
       if (data.success) {
         setUserVote(vote);
@@ -325,7 +329,8 @@ export default function Home() {
       }
     } catch (err) {
       console.error('Error voting:', err);
-      alert('Failed to record vote. Please try again.');
+      const errorMessage = err instanceof Error ? err.message : 'Failed to record vote. Please try again.';
+      alert(errorMessage);
     } finally {
       setVotingInProgress(false);
     }
