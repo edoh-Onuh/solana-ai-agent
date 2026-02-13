@@ -11,20 +11,25 @@ To make the Vercel deployment work exactly like your local environment, you need
    - Description: High-performance Helius RPC endpoint for Solana mainnet
    - Required for: Fetching validator data, vote accounts, and stake information
 
-2. **OPENAI_API_KEY** (if using AI recommendations)
+2. **NEXT_PUBLIC_SUPABASE_URL**
+   - Value: Your Supabase project URL (e.g., `https://xxxxx.supabase.co`)
+   - Description: Database for storing validator votes
+   - Required for: Voting features (approve/reject recommendations)
+   - Get from: Your Supabase project settings → API → Project URL
+   - Note: App will work without this but voting will be disabled
+
+3. **NEXT_PUBLIC_SUPABASE_ANON_KEY**
+   - Value: Your Supabase anonymous key
+   - Description: Public API key for Supabase authentication
+   - Required for: Voting features
+   - Get from: Your Supabase project settings → API → Project API keys → anon/public
+   - Note: App will work without this but voting will be disabled
+
+4. **OPENAI_API_KEY** (Optional - for AI recommendations)
    - Value: Your OpenAI API key
    - Description: Required for GPT-4o AI validator recommendations
    - Get from: https://platform.openai.com/api-keys
-
-3. **NEXT_PUBLIC_SUPABASE_URL** (if using voting features)
-   - Value: Your Supabase project URL
-   - Description: Database for storing validator votes
-   - Get from: Your Supabase project settings
-
-4. **NEXT_PUBLIC_SUPABASE_ANON_KEY** (if using voting features)
-   - Value: Your Supabase anonymous key
-   - Description: Public API key for Supabase
-   - Get from: Your Supabase project settings
+   - Note: Without this, AI recommendations may use fallback logic
 
 ## How to Add Environment Variables to Vercel
 
@@ -57,7 +62,13 @@ vercel --prod
 
 ## Troubleshooting
 
-### Issue: Superteam validators not showing
+### Issue: Voting features not working
+**Solution**: Add Supabase environment variables in Vercel:
+1. Go to Vercel → Settings → Environment Variables
+2. Add `NEXT_PUBLIC_SUPABASE_URL` with your Supabase project URL
+3. Add `NEXT_PUBLIC_SUPABASE_ANON_KEY` with your Supabase anon key
+4. Redeploy the application
+5. If you don't have Supabase, the app will still work but voting will be disabled
 **Solution**: Ensure `NEXT_PUBLIC_SOLANA_RPC_URL` is set in Vercel. This is required for the app to fetch validator vote accounts.
 
 ### Issue: API routes returning errors
