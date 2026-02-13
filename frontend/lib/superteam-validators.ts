@@ -11,13 +11,13 @@
  */
 
 export const SUPERTEAM_VALIDATORS: string[] = [
-  // Superteam community validators - using active validators from network
-  'By8MseMKtZQQaQjMHJiyetmc5AC8RZZv8C2ss33ktrHt', // Validator 2 - 170,997 SOL
-  'Bi9kKNxfW2XqgCmLcuhHt6A3x55GuAGmrVZxRHLyVoQ4', // Validator 3 - 371,063 SOL
-  '7Nn8qBJey7vXtVFMNBbbuN8UkujU8Y6nWzbHVGuf49yV', // Validator 5 - 286,976 SOL
-  '3YVoK8UN62dyiPZnGBzBTkGdwsVmmK1MpRoLcxNRs9BE', // Validator 7 - 300,005 SOL
-  'axy3tCRL3wmFMVG4c69rYurcf4fXhBo2RcuBj9ADnJ4', // Validator 8 - 88,848 SOL
-  'ZoD1XLMhxdMveAJL4x9oab4FhRKP5NThTnSCH19Tdjp', // Validator 9 - 50,359 SOL
+  // Superteam community validators - actual validator pubkeys
+  'ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae', // Abreu
+  'unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk', // Unruggable
+  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ', // Lantern
+  'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R', // Stronghold
+  'BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2', // BULK
+  'EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72', // EARN
 ];
 
 /**
@@ -36,57 +36,57 @@ export interface SuperteamValidatorInfo {
 }
 
 export const SUPERTEAM_VALIDATOR_INFO: Record<string, SuperteamValidatorInfo> = {
-  'By8MseMKtZQQaQjMHJiyetmc5AC8RZZv8C2ss33ktrHt': {
-    pubkey: 'By8MseMKtZQQaQjMHJiyetmc5AC8RZZv8C2ss33ktrHt',
+  'ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae': {
+    pubkey: 'ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae',
     name: 'Abreu',
     logo: '🏆',
     region: 'Global',
-    specialty: 'Superteam Priority Validator - 170K SOL',
+    specialty: 'Superteam Priority Validator',
     joinedDate: '2026-02',
     website: 'https://stakewiz.com/validator/ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae',
   },
-  'Bi9kKNxfW2XqgCmLcuhHt6A3x55GuAGmrVZxRHLyVoQ4': {
-    pubkey: 'Bi9kKNxfW2XqgCmLcuhHt6A3x55GuAGmrVZxRHLyVoQ4',
+  'unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk': {
+    pubkey: 'unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk',
     name: 'Unruggable',
     logo: '⛓️',
     region: 'Global',
-    specialty: 'Secure & Reliable Validation - 371K SOL',
+    specialty: 'Secure & Reliable Validation',
     joinedDate: '2026-02',
     website: 'https://solanacompass.com/validators/unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk',
   },
-  '7Nn8qBJey7vXtVFMNBbbuN8UkujU8Y6nWzbHVGuf49yV': {
-    pubkey: '7Nn8qBJey7vXtVFMNBbbuN8UkujU8Y6nWzbHVGuf49yV',
+  'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ': {
+    pubkey: 'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ',
     name: 'Lantern',
     logo: '🏮',
     region: 'Rotterdam, Netherlands',
-    specialty: 'High Performance & Decentralization - 287K SOL',
+    specialty: 'High Performance & Decentralization',
     joinedDate: '2024-03',
     website: 'https://www.lantern.one/',
   },
-  '3YVoK8UN62dyiPZnGBzBTkGdwsVmmK1MpRoLcxNRs9BE': {
-    pubkey: '3YVoK8UN62dyiPZnGBzBTkGdwsVmmK1MpRoLcxNRs9BE',
+  'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R': {
+    pubkey: 'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R',
     name: 'Stronghold',
     logo: '🛡️',
     region: 'Global',
-    specialty: 'Enterprise-Grade Infrastructure - 300K SOL',
+    specialty: 'Enterprise-Grade Infrastructure',
     joinedDate: '2026-02',
     website: 'https://stronghold-metrics.vercel.app/',
   },
-  'axy3tCRL3wmFMVG4c69rYurcf4fXhBo2RcuBj9ADnJ4': {
-    pubkey: 'axy3tCRL3wmFMVG4c69rYurcf4fXhBo2RcuBj9ADnJ4',
+  'BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2': {
+    pubkey: 'BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2',
     name: 'BULK',
     logo: '📦',
     region: 'Global',
-    specialty: 'High-Volume Validation - 89K SOL',
+    specialty: 'High-Volume Validation',
     joinedDate: '2026-02',
     website: 'https://stakewiz.com/validator/BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2',
   },
-  'ZoD1XLMhxdMveAJL4x9oab4FhRKP5NThTnSCH19Tdjp': {
-    pubkey: 'ZoD1XLMhxdMveAJL4x9oab4FhRKP5NThTnSCH19Tdjp',
+  'EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72': {
+    pubkey: 'EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72',
     name: 'EARN',
     logo: '💰',
     region: 'Global',
-    specialty: 'Rewards Optimization - 50K SOL',
+    specialty: 'Rewards Optimization',
     joinedDate: '2026-02',
     website: 'https://stakewiz.com/validator/EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72',
   },
