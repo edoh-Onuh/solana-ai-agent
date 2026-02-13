@@ -114,8 +114,8 @@ export async function getVotesByRecommendation(
       return { approves: 0, rejects: 0 };
     }
 
-    const approves = data.filter((v) => v.vote_type === 'approve').length;
-    const rejects = data.filter((v) => v.vote_type === 'reject').length;
+    const approves = data.filter((v: any) => v.vote_type === 'approve').length;
+    const rejects = data.filter((v: any) => v.vote_type === 'reject').length;
 
     return { approves, rejects };
   } catch (error) {
