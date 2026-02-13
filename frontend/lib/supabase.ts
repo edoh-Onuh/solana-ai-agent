@@ -1,20 +1,51 @@
 import { createClient } from '@supabase/supabase-js';
 
+// Database type definitions
+interface Database {
+  public: {
+    Tables: {
+      votes: {
+        Row: {
+          id: string;
+          recommendation_id: string;
+          wallet_address: string;
+          vote_type: 'approve' | 'reject';
+          created_at: string;
+        };
+        Insert: {
+          id?: string;
+          recommendation_id: string;
+          wallet_address: string;
+          vote_type: 'approve' | 'reject';
+          created_at?: string;
+        };
+        Update: {
+          id?: string;
+          recommendation_id?: string;
+          wallet_address?: string;
+          vote_type?: 'approve' | 'reject';
+          created_at?: string;
+        };
+      };
+    };
+  };
+}
+
 const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Create a dummy client if env vars are missing (for deployments without Supabase)
-let supabase: ReturnType<typeof createClient>;
+let supabase: ReturnType<typeof createClient<Database>>;
 let supabaseEnabled = false;
 
 if (supabaseUrl && supabaseAnonKey) {
-  supabase = createClient(supabaseUrl, supabaseAnonKey);
+  supabase = createClient<Database>(supabaseUrl, supabaseAnonKey);
   supabaseEnabled = true;
   console.log('Supabase client initialized successfully');
 } else {
   console.warn('Supabase environment variables not found. Voting features will be disabled.');
   // Create a mock client that won't be used
-  supabase = createClient('https://placeholder.supabase.co', 'placeholder-key');
+  supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key');
 }
 
 export { supabase, supabaseEnabled };
