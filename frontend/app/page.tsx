@@ -453,10 +453,6 @@ export default function Home() {
 
         {/* Superteam Community Validators Section */}
         <div className="mb-6 sm:mb-8">
-          <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-            Superteam Community Validators
-          </h2>
           <SuperteamStats {...superteamStats} />
         </div>
 
