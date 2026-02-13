@@ -6,7 +6,7 @@ import { ValidatorMetrics, DecentralizationMetrics, AIRecommendation } from '@/l
 import { MetricsCharts } from '@/components/MetricsCharts';
 import { useWallet } from '@solana/wallet-adapter-react';
 import { WalletMultiButton } from '@solana/wallet-adapter-react-ui';
-import { SuperteamBadge, SuperteamStats, SuperteamFilter } from '@/components/SuperteamComponents';
+import { SuperteamBadge, SuperteamStats } from '@/components/SuperteamComponents';
 import { isSuperteamValidator, getSuperteamValidatorInfo } from '@/lib/superteam-validators';
 
 interface VoteDisplay {
@@ -29,7 +29,7 @@ export default function Home() {
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
   const [votingInProgress, setVotingInProgress] = useState(false);
   const [recentVotes, setRecentVotes] = useState<VoteDisplay[]>([]);
-  const [showSuperteamOnly, setShowSuperteamOnly] = useState(false);
+
   const [isRefreshing, setIsRefreshing] = useState(false);
 
   // Cache validators data to reduce API calls
@@ -79,13 +79,18 @@ export default function Home() {
     };
   }, [validators]);
 
-  // Filter validators based on Superteam toggle
-  const displayedValidators = useMemo(() => {
-    if (showSuperteamOnly) {
-      return validators.filter(v => isSuperteamValidator(v.votePubkey));
-    }
-    return validators;
-  }, [validators, showSuperteamOnly]);
+  // Separate Superteam and other validators, both sorted descending by stake (highest to lowest)
+  const superteamValidatorsList = useMemo(() => {
+    return validators
+      .filter(v => isSuperteamValidator(v.votePubkey))
+      .sort((a, b) => b.activatedStake - a.activatedStake);
+  }, [validators]);
+
+  const otherValidatorsList = useMemo(() => {
+    return validators
+      .filter(v => !isSuperteamValidator(v.votePubkey))
+      .sort((a, b) => b.activatedStake - a.activatedStake);
+  }, [validators]);
 
   useEffect(() => {
     // Load from cache first for instant display
@@ -419,11 +424,7 @@ export default function Home() {
                 <RefreshCw className={`w-4 h-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
-              <SuperteamFilter 
-                enabled={showSuperteamOnly}
-                onToggle={() => setShowSuperteamOnly(!showSuperteamOnly)}
-                count={superteamStats.totalValidators}
-              />
+
             </div>
           </div>
         </div>
@@ -661,28 +662,60 @@ export default function Home() {
           )}
         </div>
 
-        {/* Top Validators List */}
+        {/* Superteam Community Validators */}
         <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            {showSuperteamOnly ? 'Superteam Community Validators' : 'Top Validators by Stake'}
+          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
+            <span>🏆 Superteam Community Validators</span>
           </h2>
           <div className="space-y-2">
-            {displayedValidators.slice(0, 10).map((validator, index) => {
+            {superteamValidatorsList.map((validator, index) => {
               const superteamInfo = getSuperteamValidatorInfo(validator.votePubkey);
               return (
-                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
+                <div key={validator.pubkey} className="bg-gradient-to-r from-purple-900/30 to-black/30 rounded-lg p-4 flex items-center justify-between border border-purple-500/20">
                   <div className="flex items-center gap-4">
                     <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
                     <div>
                       <div className="text-white font-mono text-sm flex items-center gap-2">
                         {superteamInfo?.logo && <span className="text-2xl">{superteamInfo.logo}</span>}
                         {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
-                        {isSuperteamValidator(validator.votePubkey) && (
-                          <SuperteamBadge size="sm" />
-                        )}
+                        <SuperteamBadge size="sm" />
                       </div>
                       <div className="text-purple-300 text-xs">
                         {superteamInfo ? superteamInfo.name : validator.name}
+                      </div>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    <div className="text-white font-semibold">
+                      {Math.floor(validator.activatedStake / 1e9).toLocaleString()} SOL
+                    </div>
+                    <div className="text-purple-300 text-sm">
+                      {validator.stakePercentage.toFixed(3)}% of network
+                    </div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* All Other Validators */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
+          <h2 className="text-2xl font-bold text-white mb-4">
+            All Other Validators
+          </h2>
+          <div className="space-y-2">
+            {otherValidatorsList.slice(0, 10).map((validator, index) => {
+              return (
+                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
+                  <div className="flex items-center gap-4">
+                    <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
+                    <div>
+                      <div className="text-white font-mono text-sm">
+                        {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
+                      </div>
+                      <div className="text-purple-300 text-xs">
+                        {validator.name}
                       </div>
                     </div>
                   </div>
