@@ -71,7 +71,7 @@ export function SuperteamStats({ totalValidators, totalStake, averageCommission,
             <span className="text-pink-300 text-sm">Total Stake</span>
           </div>
           <div className="text-3xl font-bold text-white">
-            {(totalStake / 1e9).toFixed(0)}K
+            {Math.floor(totalStake / 1e9).toLocaleString()}
           </div>
           <div className="text-xs text-pink-300">SOL</div>
         </div>

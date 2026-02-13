@@ -514,7 +514,7 @@ export default function Home() {
                         </div>
                         <div className="text-left sm:text-right">
                           <div className="text-white font-semibold text-sm sm:text-base">
-                            {((v.currentStake || 0) / 1e9).toLocaleString()} SOL
+                            {Math.floor((v.currentStake || 0) / 1e9).toLocaleString()} SOL
                           </div>
                           <div className="text-purple-300 text-xs">
                             Current stake
@@ -668,10 +668,10 @@ export default function Home() {
                   </div>
                   <div className="text-right">
                     <div className="text-white font-semibold">
-                      {(validator.activatedStake / 1e9).toFixed(0).toLocaleString()} SOL
+                      {Math.floor(validator.activatedStake / 1e9).toLocaleString()} SOL
                     </div>
                     <div className="text-purple-300 text-sm">
-                      {validator.stakePercentage.toFixed(2)}% of network
+                      {validator.stakePercentage.toFixed(3)}% of network
                     </div>
                   </div>
                 </div>
