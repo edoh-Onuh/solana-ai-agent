@@ -35,7 +35,7 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 // Create a dummy client if env vars are missing (for deployments without Supabase)
-let supabase: ReturnType<typeof createClient<Database>>;
+let supabase: any;
 let supabaseEnabled = false;
 
 if (supabaseUrl && supabaseAnonKey) {
@@ -44,8 +44,8 @@ if (supabaseUrl && supabaseAnonKey) {
   console.log('Supabase client initialized successfully');
 } else {
   console.warn('Supabase environment variables not found. Voting features will be disabled.');
-  // Create a mock client that won't be used
-  supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key');
+  // Create a mock client that won't be used - use 'any' type to avoid TypeScript errors
+  supabase = createClient<Database>('https://placeholder.supabase.co', 'placeholder-key') as any;
 }
 
 export { supabase, supabaseEnabled };
