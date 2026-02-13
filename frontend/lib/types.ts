@@ -74,6 +74,7 @@ export interface AIRecommendation {
 
 export interface ValidatorRecommendation {
   pubkey: string;
+  votePubkey: string;
   name?: string;
   recommendedStake: number;
   currentStake: number;

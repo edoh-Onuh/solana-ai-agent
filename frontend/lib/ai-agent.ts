@@ -350,6 +350,7 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
       const stakePerValidator = targetStake / emergencyCandidates.length;
       const validatorRecs: ValidatorRecommendation[] = emergencyCandidates.map(v => ({
         pubkey: v.pubkey,
+        votePubkey: v.votePubkey,
         name: v.name || 'Unknown',
         recommendedStake: stakePerValidator,
         currentStake: v.activatedStake,
@@ -416,6 +417,7 @@ Analyze the network state and recommend how to distribute the ${(targetStake / 1
       
       return {
         pubkey: v.pubkey,
+        votePubkey: v.votePubkey,
         name: v.name || 'Unknown',
         recommendedStake: stakePerValidator,
         currentStake: v.activatedStake,
