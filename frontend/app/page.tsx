@@ -30,6 +30,19 @@ export default function Home() {
   const [votingInProgress, setVotingInProgress] = useState(false);
   const [recentVotes, setRecentVotes] = useState<VoteDisplay[]>([]);
   const [showSuperteamOnly, setShowSuperteamOnly] = useState(false);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  // Cache validators data to reduce API calls
+  const validatorsCache = useMemo(() => {
+    if (typeof window !== 'undefined') {
+      const cached = sessionStorage.getItem('validators-cache');
+      const timestamp = sessionStorage.getItem('validators-cache-time');
+      if (cached && timestamp && Date.now() - parseInt(timestamp) < 60000) { // 1 minute cache
+        return JSON.parse(cached);
+      }
+    }
+    return null;
+  }, []);
 
   // Calculate Superteam stats
   const superteamStats = useMemo(() => {
@@ -60,9 +73,18 @@ export default function Home() {
   }, [validators, showSuperteamOnly]);
 
   useEffect(() => {
+    // Load from cache first for instant display
+    if (validatorsCache) {
+      setValidators(validatorsCache.validators);
+      setMetrics(validatorsCache.metrics);
+      setDataSource(validatorsCache.dataSource);
+      setLoading(false);
+    }
+    
+    // Then load fresh data in background
     loadValidators();
     checkStatus();
-  }, []);
+  }, [validatorsCache]);
 
   useEffect(() => {
     if (!recommendation?.id) return;
@@ -130,11 +152,15 @@ export default function Home() {
 
   async function loadValidators() {
     try {
-      setLoading(true);
+      if (!isRefreshing) {
+        setLoading(true);
+      }
       setError(null);
       
       console.log('Fetching validators from API...');
-      const response = await fetch('/api/validators');
+      const response = await fetch('/api/validators', {
+        next: { revalidate: 60 }, // Cache for 60 seconds
+      });
       
       if (!response.ok) {
         throw new Error('Failed to fetch validators');
@@ -163,6 +189,16 @@ export default function Home() {
       setMetrics(data.metrics);
       setDataSource(data.dataSource || 'live');
       
+      // Cache the data
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('validators-cache', JSON.stringify({
+          validators: validatorsWithSuperteam,
+          metrics: data.metrics,
+          dataSource: data.dataSource || 'live',
+        }));
+        sessionStorage.setItem('validators-cache-time', Date.now().toString());
+      }
+      
       console.log(`Loaded ${data.validators.length} validators`);
       console.log('Nakamoto Coefficient:', data.metrics.nakamotoCoefficient);
       console.log('Data source:', data.dataSource);
@@ -171,6 +207,7 @@ export default function Home() {
       setError('Failed to load validators. Check console for details.');
     } finally {
       setLoading(false);
+      setIsRefreshing(false);
     }
   }
 
@@ -352,12 +389,15 @@ export default function Home() {
             <div className="flex flex-wrap items-center gap-2 sm:gap-3">
               <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors !text-sm sm:!text-base" />
               <button
-                onClick={loadValidators}
-                disabled={loading}
-                className="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base"
+                onClick={() => {
+                  setIsRefreshing(true);
+                  loadValidators();
+                }}
+                disabled={loading || isRefreshing}
+                className="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base disabled:opacity-50"
               >
-                <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin' : ''}`} />
-                <span className="hidden sm:inline">Refresh</span>
+                <RefreshCw className={`w-4 h-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
+                <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
               <SuperteamFilter 
                 enabled={showSuperteamOnly}

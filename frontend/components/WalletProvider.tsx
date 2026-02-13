@@ -7,8 +7,6 @@ import { WalletModalProvider } from '@solana/wallet-adapter-react-ui';
 import {
   PhantomWalletAdapter,
   SolflareWalletAdapter,
-  TorusWalletAdapter,
-  LedgerWalletAdapter,
 } from '@solana/wallet-adapter-wallets';
 
 interface Props {
@@ -19,26 +17,34 @@ export const WalletContextProvider: FC<Props> = ({ children }) => {
   // Use mainnet-beta for production
   const network = WalletAdapterNetwork.Mainnet;
   
-  // Use environment variable or fallback to public RPC
+  // Use optimized RPC endpoint with commitment level
   const endpoint = useMemo(
     () => process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com',
     []
   );
 
-  // Configure supported wallets
+  // Optimize: Only load popular wallets for faster initialization
   const wallets = useMemo(
     () => [
       new PhantomWalletAdapter(),
-      new SolflareWalletAdapter(),
-      new TorusWalletAdapter(),
-      new LedgerWalletAdapter(),
+      new SolflareWalletAdapter({ network }),
     ],
-    []
+    [network]
   );
 
   return (
-    <ConnectionProvider endpoint={endpoint}>
-      <WalletProvider wallets={wallets} autoConnect>
+    <ConnectionProvider 
+      endpoint={endpoint}
+      config={{
+        commitment: 'confirmed',
+        confirmTransactionInitialTimeout: 60000,
+      }}
+    >
+      <WalletProvider 
+        wallets={wallets} 
+        autoConnect={true}
+        localStorageKey="solana-wallet"
+      >
         <WalletModalProvider>{children}</WalletModalProvider>
       </WalletProvider>
     </ConnectionProvider>
