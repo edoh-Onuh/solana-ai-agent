@@ -2,18 +2,23 @@
 import { Connection, VoteAccountStatus, PublicKey } from '@solana/web3.js';
 import { ValidatorInfo, ValidatorMetrics, DecentralizationMetrics } from './types';
 
-// Use server-side env variable if available, fallback to public
-const RPC_URL = process.env.SOLANA_RPC_URL || process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 'https://api.mainnet-beta.solana.com';
+// RPC endpoint priority: Helius (fastest) > Alchemy > Official
+const RPC_URL = process.env.SOLANA_RPC_URL || 
+  process.env.NEXT_PUBLIC_SOLANA_RPC_URL || 
+  'https://johna-k3cr1v-fast-mainnet.helius-rpc.com';
 
 export class SolanaClient {
   private connection: Connection;
+  private rpcUrl: string;
 
   constructor(rpcUrl: string = RPC_URL) {
-    // Use 'confirmed' commitment for faster responses
+    this.rpcUrl = rpcUrl;
+    // Use 'confirmed' commitment for faster responses while maintaining accuracy
     this.connection = new Connection(rpcUrl, {
       commitment: 'confirmed',
       confirmTransactionInitialTimeout: 60000,
     });
+    console.log(`SolanaClient initialized with RPC: ${rpcUrl.includes('helius') ? 'Helius (fast)' : rpcUrl.includes('alchemy') ? 'Alchemy' : 'Official'}`);
   }
 
   /**

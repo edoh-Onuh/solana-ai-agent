@@ -46,9 +46,24 @@ export default function Home() {
 
   // Calculate Superteam stats
   const superteamStats = useMemo(() => {
-    const superteamValidators = validators.filter(v => isSuperteamValidator(v.pubkey));
+    const superteamValidators = validators.filter(v => isSuperteamValidator(v.votePubkey));
+    console.log('=== SUPERTEAM VALIDATOR DETECTION ===');
     console.log('Superteam validators found:', superteamValidators.length);
-    console.log('Checking for Lantern validator:', validators.find(v => v.pubkey === 'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ'));
+    console.log('Expected: 6 validators');
+    console.log('Found validators:', superteamValidators.map(v => ({
+      votePubkey: v.votePubkey,
+      name: getSuperteamValidatorInfo(v.votePubkey)?.name || 'Unknown',
+      stake: Math.floor(v.activatedStake / 1e9).toLocaleString() + ' SOL'
+    })));
+    console.log('Missing validators:', [
+      'ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae',
+      'unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk',
+      'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ',
+      'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R',
+      'BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2',
+      'EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72'
+    ].filter(pubkey => !validators.some(v => v.votePubkey === pubkey)));
+    console.log('Total validators in API:', validators.length);
     
     const totalStake = superteamValidators.reduce((sum, v) => sum + v.activatedStake, 0);
     const avgCommission = superteamValidators.length > 0
@@ -67,7 +82,7 @@ export default function Home() {
   // Filter validators based on Superteam toggle
   const displayedValidators = useMemo(() => {
     if (showSuperteamOnly) {
-      return validators.filter(v => isSuperteamValidator(v.pubkey));
+      return validators.filter(v => isSuperteamValidator(v.votePubkey));
     }
     return validators;
   }, [validators, showSuperteamOnly]);
@@ -175,7 +190,7 @@ export default function Home() {
       // Mark Superteam validators
       const validatorsWithSuperteam = data.validators.map((v: ValidatorMetrics) => ({
         ...v,
-        isSuperteamValidator: isSuperteamValidator(v.pubkey),
+        isSuperteamValidator: isSuperteamValidator(v.votePubkey),
       }));
       
       // Log first 10 validator pubkeys to help identify which ones to add to Superteam list
@@ -496,7 +511,7 @@ export default function Home() {
               <h3 className="text-white font-semibold text-base sm:text-lg">Recommended Validators:</h3>
               <div className="grid gap-2 sm:gap-3">
                 {recommendation.validators.slice(0, 5).map((v, i) => {
-                  const superteamInfo = getSuperteamValidatorInfo(v.pubkey);
+                  const superteamInfo = getSuperteamValidatorInfo(v.votePubkey);
                   return (
                     <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
                       <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
@@ -504,7 +519,7 @@ export default function Home() {
                           <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-2 flex-wrap">
                             {superteamInfo?.logo && <span className="text-xl">{superteamInfo.logo}</span>}
                             {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
-                            {isSuperteamValidator(v.pubkey) && (
+                            {isSuperteamValidator(v.votePubkey) && (
                               <SuperteamBadge size="sm" />
                             )}
                           </div>
@@ -648,7 +663,7 @@ export default function Home() {
           </h2>
           <div className="space-y-2">
             {displayedValidators.slice(0, 10).map((validator, index) => {
-              const superteamInfo = getSuperteamValidatorInfo(validator.pubkey);
+              const superteamInfo = getSuperteamValidatorInfo(validator.votePubkey);
               return (
                 <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
                   <div className="flex items-center gap-4">
@@ -657,7 +672,7 @@ export default function Home() {
                       <div className="text-white font-mono text-sm flex items-center gap-2">
                         {superteamInfo?.logo && <span className="text-2xl">{superteamInfo.logo}</span>}
                         {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
-                        {isSuperteamValidator(validator.pubkey) && (
+                        {isSuperteamValidator(validator.votePubkey) && (
                           <SuperteamBadge size="sm" />
                         )}
                       </div>

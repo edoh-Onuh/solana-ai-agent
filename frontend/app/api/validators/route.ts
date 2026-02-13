@@ -3,9 +3,10 @@ import { Connection } from '@solana/web3.js';
 import { solanaClient } from '@/lib/solana';
 import { ValidatorMetrics } from '@/lib/types';
 
-// Multiple RPC endpoints to try
+// Multiple RPC endpoints to try (ordered by preference)
 const RPC_ENDPOINTS = [
-  'https://solana-mainnet.g.alchemy.com/v2/demo',
+  process.env.SOLANA_RPC_URL || 'https://solana-mainnet.g.alchemy.com/v2/demo',
+  'https://johna-k3cr1v-fast-mainnet.helius-rpc.com', // Helius high-performance RPC
   'https://api.mainnet-beta.solana.com',
   'https://solana-api.projectserum.com',
 ];

@@ -11,11 +11,11 @@
  */
 
 export const SUPERTEAM_VALIDATORS: string[] = [
-  // Superteam community validators - actual validator pubkeys
+  // Superteam community validators - vote account pubkeys
   'ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae', // Abreu
   'unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk', // Unruggable
   'FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ', // Lantern
-  'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R', // Stronghold
+  'Ac1beBKixfNdrTAac7GRaTsJTxLyvgGvJjvy4qQfvyfc', // Stronghold (201K SOL)
   'BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2', // BULK
   'EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72', // EARN
 ];
@@ -63,8 +63,8 @@ export const SUPERTEAM_VALIDATOR_INFO: Record<string, SuperteamValidatorInfo> = 
     joinedDate: '2024-03',
     website: 'https://www.lantern.one/',
   },
-  'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R': {
-    pubkey: 'EGUg4nrfkXmqb14jdpdczHDe3SgDNYJmxSmvr5CP7k8R',
+  'Ac1beBKixfNdrTAac7GRaTsJTxLyvgGvJjvy4qQfvyfc': {
+    pubkey: 'Ac1beBKixfNdrTAac7GRaTsJTxLyvgGvJjvy4qQfvyfc',
     name: 'Stronghold',
     logo: '🛡️',
     region: 'Global',
@@ -94,16 +94,29 @@ export const SUPERTEAM_VALIDATOR_INFO: Record<string, SuperteamValidatorInfo> = 
 
 /**
  * Check if a validator is part of Superteam community
+ * Checks both node pubkey and vote pubkey
  */
 export function isSuperteamValidator(pubkey: string): boolean {
   return SUPERTEAM_VALIDATORS.includes(pubkey);
 }
 
 /**
- * Get Superteam validator info
+ * Check if a validator is Superteam by vote account
  */
-export function getSuperteamValidatorInfo(pubkey: string): SuperteamValidatorInfo | null {
-  return SUPERTEAM_VALIDATOR_INFO[pubkey] || null;
+export function isSuperteamValidatorByVote(votePubkey: string): boolean {
+  return SUPERTEAM_VALIDATORS.includes(votePubkey);
+}
+
+/**
+ * Get Superteam validator info by node or vote pubkey
+ */
+export function getSuperteamValidatorInfo(pubkeyOrVote: string): SuperteamValidatorInfo | null {
+  // Check if it's directly in the info map
+  if (SUPERTEAM_VALIDATOR_INFO[pubkeyOrVote]) {
+    return SUPERTEAM_VALIDATOR_INFO[pubkeyOrVote];
+  }
+  // Otherwise, vote pubkeys are the keys
+  return null;
 }
 
 /**
