@@ -316,68 +316,25 @@ An **autonomous AI agent** with Superteam Community Validators, real-time data a
 
 ---
 
+## 🛡️ Superteam Community Validators
+
 The Validator Pulse AI Agent features a dedicated **Superteam Community Validators** system - a verified network of trusted validators within the Superteam ecosystem.
 
 ### 📊 Current Superteam Network
 
-**Active Validators:** 7+
-**Total Stake:** 1.5M+ SOL
-**Average Commission:** 2-5%
-**Geographic Distribution:** Global
+**Active Validators:** 4
+**Total Stake:** 1,193,873K SOL (~$200M+ value)
+**Average Commission:** 2.3%
+**Geographic Distribution:** 3-4 countries
 
-### 🌟 Featured Community Validators
+### Superteam Validator List
 
-<div align="center">
-
-#### 🥇 **Abreu Validator**
-**Pubkey:** `ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae`  
-🔗 [View on StakeWiz](https://stakewiz.com/validator/ABREUtpzkkMiPHrBebpsYDU3mubtSohjDKZbyRoTJLae)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### 🥈 **Unruggable Validator**
-**Pubkey:** `unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk`  
-🔗 [View on Solana Compass](https://solanacompass.com/validators/unRgBLTLNXdBmenHXNPAg3AMn3KWcV3Mk4eoZBmTrdk)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### 🥉 **Lantern Validator**
-**Pubkey:** `FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ`  
-🔗 [View on StakeWiz](https://stakewiz.com/validator/FACqsS19VScz8oo2YhdMg35EsAy6xsCZ9Y58eJXGv8QJ)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### 🏆 **Stronghold Validator**
-**Name:** Stronghold Metrics  
-🔗 [Stronghold Dashboard](https://stronghold-metrics.vercel.app/)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### 💎 **BULK Validator**
-**Pubkey:** `BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2`  
-🔗 [View on StakeWiz](https://stakewiz.com/validator/BULKEEKf9Hjy4nwCthjzheEk4joH23LLXttAHjqEZmB2)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### ⭐ **EARN Validator**
-**Pubkey:** `EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72`  
-🔗 [View on StakeWiz](https://stakewiz.com/validator/EARNynHRWg6GfyJCmrrizcZxARB3HVzcaasvNa8kBS72)  
-✅ **Status:** Active | 🛡️ Verified Superteam Member
-
----
-
-#### 🔵 **Additional Active Validators**
-- **Validator 210:** `8Nvaxzif...8EDkgaNy` - 216,031 SOL (0.05%)
-- **Validator 695:** `SyndicAg...2UD9xeug` - 270,101 SOL (0.06%)
-- **Validator 389:** `spcti6GQ...4tmK4M5F` - 253,970 SOL (0.06%)
-- **Validator 324:** `AqyRvpjj...QZHcJ2o7` - 453,771 SOL (0.11%)
-
-</div>
+| # | Validator | Stake | % Network | Status |
+|---|-----------|-------|-----------|--------|
+| 1 | 8Nvaxzif...8EDkgaNy | 216,031 SOL | 0.05% | ✅ Active |
+| 2 | SyndicAg...2UD9xeug | 270,101 SOL | 0.06% | ✅ Active |
+| 3 | spcti6GQ...4tmK4M5F | 253,970 SOL | 0.06% | ✅ Active |
+| 4 | AqyRvpjj...QZHcJ2o7 | 453,771 SOL | 0.11% | ✅ Active |
 
 ### Features
 
