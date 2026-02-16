@@ -29,6 +29,8 @@ export default function Home() {
   const [openaiConfigured, setOpenaiConfigured] = useState(false);
   const [votingInProgress, setVotingInProgress] = useState(false);
   const [recentVotes, setRecentVotes] = useState<VoteDisplay[]>([]);
+  const [voteError, setVoteError] = useState<string | null>(null);
+  const [voteSuccess, setVoteSuccess] = useState<string | null>(null);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -79,14 +81,14 @@ export default function Home() {
     };
   }, [validators]);
 
-  // Separate Superteam and other validators, both sorted descending by stake (highest to lowest)
-  const superteamValidatorsList = useMemo(() => {
+  // Separate Superteam and other validators, sorted by stake descending (largest to smallest)
+  const superteamValidators = useMemo(() => {
     return validators
       .filter(v => isSuperteamValidator(v.votePubkey))
       .sort((a, b) => b.activatedStake - a.activatedStake);
   }, [validators]);
 
-  const otherValidatorsList = useMemo(() => {
+  const otherValidators = useMemo(() => {
     return validators
       .filter(v => !isSuperteamValidator(v.votePubkey))
       .sort((a, b) => b.activatedStake - a.activatedStake);
@@ -125,10 +127,18 @@ export default function Home() {
 
   async function loadRecentVotes(recommendationId: string) {
     try {
-      const response = await fetch(`/api/recent-votes?recommendationId=${recommendationId}&limit=10`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 5000); // 5s timeout
+      
+      const response = await fetch(`/api/recent-votes?recommendationId=${recommendationId}&limit=10`, {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const data = await response.json();
-        console.log(`[${new Date().toLocaleTimeString()}] Loaded ${data.votes?.length || 0} votes`);
         setRecentVotes(data.votes?.map((v: any) => ({
           id: v.id,
           wallet: v.wallet_address,
@@ -137,25 +147,41 @@ export default function Home() {
         })) || []);
       }
     } catch (err) {
-      console.error('Error loading recent votes:', err);
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Error loading recent votes:', err);
+      }
     }
   }
 
   async function updateVoteCounts(recommendationId: string) {
     try {
-      const response = await fetch(`/api/votes?recommendationId=${recommendationId}`);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 3000); // 3s timeout
+      
+      const response = await fetch(`/api/votes?recommendationId=${recommendationId}`, {
+        signal: controller.signal,
+        cache: 'no-store'
+      });
+      
+      clearTimeout(timeoutId);
+      
       if (response.ok) {
         const data = await response.json();
         if (data.success && recommendation) {
-          const updatedRec = { ...recommendation };
-          updatedRec.votes.approve = data.voteCounts.approves;
-          updatedRec.votes.reject = data.voteCounts.rejects;
-          updatedRec.votes.total = data.voteCounts.approves + data.voteCounts.rejects;
-          setRecommendation(updatedRec);
+          setRecommendation(prev => prev ? {
+            ...prev,
+            votes: {
+              approve: data.voteCounts.approves,
+              reject: data.voteCounts.rejects,
+              total: data.voteCounts.approves + data.voteCounts.rejects
+            }
+          } : prev);
         }
       }
     } catch (err) {
-      console.error('Error updating vote counts:', err);
+      if (err instanceof Error && err.name !== 'AbortError') {
+        console.error('Error updating vote counts:', err);
+      }
     }
   }
 
@@ -288,16 +314,39 @@ export default function Home() {
     }
   }
 
-  async function handleVote(vote: 'approve' | 'reject') {
+  async function handleVote(vote: 'approve' | 'reject', retryCount = 0) {
     if (!recommendation || !connected || !publicKey) {
-      alert('Please connect your wallet to vote');
+      setVoteError('Please connect your wallet to vote');
+      setTimeout(() => setVoteError(null), 3000);
       return;
     }
     
     if (votingInProgress) return;
     
+    // Clear previous messages
+    setVoteError(null);
+    setVoteSuccess(null);
+    
+    // Optimistic update - update UI immediately
+    const previousVote = userVote;
+    const previousRecommendation = { ...recommendation };
+    
+    setUserVote(vote);
+    setVotingInProgress(true);
+    
+    // Optimistically update vote counts
+    const optimisticRec = { ...recommendation };
+    if (vote === 'approve') {
+      optimisticRec.votes.approve += 1;
+    } else {
+      optimisticRec.votes.reject += 1;
+    }
+    optimisticRec.votes.total += 1;
+    setRecommendation(optimisticRec);
+    
     try {
-      setVotingInProgress(true);
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10s timeout
       
       const response = await fetch('/api/votes', {
         method: 'POST',
@@ -307,12 +356,24 @@ export default function Home() {
           walletAddress: publicKey.toBase58(),
           voteType: vote,
         }),
+        signal: controller.signal,
       });
       
+      clearTimeout(timeoutId);
       const data = await response.json();
       
       if (!response.ok) {
-        // Handle specific error messages from the server
+        // Retry logic for network errors
+        if (retryCount < 2 && (response.status >= 500 || response.status === 408)) {
+          console.log(`Retrying vote... Attempt ${retryCount + 1}`);
+          // Restore previous state before retry
+          setUserVote(previousVote);
+          setRecommendation(previousRecommendation);
+          await new Promise(resolve => setTimeout(resolve, 1000)); // Wait 1s before retry
+          return handleVote(vote, retryCount + 1);
+        }
+        
+        // Handle specific error messages
         if (response.status === 503) {
           throw new Error(data.error || 'Voting is currently disabled');
         }
@@ -320,22 +381,31 @@ export default function Home() {
       }
       
       if (data.success) {
-        setUserVote(vote);
+        // Update with actual server data
+        setRecommendation(prev => prev ? {
+          ...prev,
+          votes: {
+            approve: data.voteCounts.approves,
+            reject: data.voteCounts.rejects,
+            total: data.voteCounts.approves + data.voteCounts.rejects
+          }
+        } : prev);
         
-        // Update vote counts from server response
-        const updatedRec = { ...recommendation };
-        updatedRec.votes.approve = data.voteCounts.approves;
-        updatedRec.votes.reject = data.voteCounts.rejects;
-        updatedRec.votes.total = data.voteCounts.approves + data.voteCounts.rejects;
-        setRecommendation(updatedRec);
+        setVoteSuccess(`Vote ${vote === 'approve' ? 'approved' : 'rejected'} successfully!`);
+        setTimeout(() => setVoteSuccess(null), 3000);
         
-        console.log(`Vote cast: ${vote}`);
-        console.log('Updated votes:', updatedRec.votes);
+        // Trigger immediate vote feed update
+        loadRecentVotes(recommendation.id);
       }
     } catch (err) {
+      // Rollback optimistic update on error
+      setUserVote(previousVote);
+      setRecommendation(previousRecommendation);
+      
       console.error('Error voting:', err);
       const errorMessage = err instanceof Error ? err.message : 'Failed to record vote. Please try again.';
-      alert(errorMessage);
+      setVoteError(errorMessage);
+      setTimeout(() => setVoteError(null), 5000);
     } finally {
       setVotingInProgress(false);
     }
@@ -375,8 +445,8 @@ export default function Home() {
       <main className="max-w-7xl mx-auto">
         {/* Data Source Banner */}
         {dataSource === 'mock' && (
-          <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-center">
-            <p className="text-yellow-200 text-sm">
+          <div className="mb-3 sm:mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-2.5 sm:p-3 text-center">
+            <p className="text-yellow-200 text-xs sm:text-sm">
               ⚠️ Demo Mode: Using mock data (Solana RPC timeout or rate limited)
             </p>
           </div>
@@ -384,128 +454,129 @@ export default function Home() {
         
         {/* OpenAI Status Banner */}
         {dataSource === 'live' && (
-          <div className="mb-4 bg-green-500/20 border border-green-500/50 rounded-lg p-3 text-center">
-            <p className="text-green-200 text-sm">
+          <div className="mb-3 sm:mb-4 bg-green-500/20 border border-green-500/50 rounded-lg p-2.5 sm:p-3 text-center">
+            <p className="text-green-200 text-xs sm:text-sm">
               ✓ Live Mode: Connected to Solana mainnet | OpenAI: {openaiConfigured ? '✓ Configured' : '✗ Not configured (using rule-based AI)'}
             </p>
           </div>
         )}
         
         {!openaiConfigured && dataSource === 'mock' && (
-          <div className="mb-4 bg-blue-500/20 border border-blue-500/50 rounded-lg p-3 text-center">
-            <p className="text-blue-200 text-sm">
+          <div className="mb-3 sm:mb-4 bg-blue-500/20 border border-blue-500/50 rounded-lg p-2.5 sm:p-3 text-center">
+            <p className="text-blue-200 text-xs sm:text-sm">
               💡 Demo Mode: Mock data + Rule-based AI (fully functional for demonstration)
             </p>
           </div>
         )}
         
         {/* Header */}
-        <div className="mb-6 sm:mb-8">
-          <div className="flex flex-wrap items-center justify-between gap-4">
-            <div>
-              <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-white mb-2 flex items-center gap-2 sm:gap-3">
-                <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-purple-400" />
-                Validator Pulse AI Agent
+        <div className="mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col gap-3 sm:gap-4">
+            <div className="w-full">
+              <h1 className="text-xl sm:text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-2 flex items-center gap-2 sm:gap-3">
+                <Shield className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 text-purple-400 flex-shrink-0" />
+                <span className="break-words">Validator Pulse AI Agent</span>
               </h1>
-              <p className="text-purple-300 text-sm sm:text-base md:text-lg">
+              <p className="text-purple-300 text-xs sm:text-sm md:text-base lg:text-lg">
                 Autonomous validator monitoring and decentralization optimization for Solana
               </p>
             </div>
-            <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-              <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors !text-sm sm:!text-base" />
+            <div className="flex flex-row items-center gap-2 w-full">
+              <div className="flex-1 min-w-0">
+                <WalletMultiButton className="!bg-purple-600 hover:!bg-purple-700 !rounded-lg !transition-colors !text-xs sm:!text-sm md:!text-base !w-full !justify-center" />
+              </div>
               <button
                 onClick={() => {
                   setIsRefreshing(true);
                   loadValidators();
                 }}
                 disabled={loading || isRefreshing}
-                className="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center gap-2 text-sm sm:text-base disabled:opacity-50"
+                className="px-3 sm:px-4 py-2 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors flex items-center justify-center gap-2 text-xs sm:text-sm md:text-base disabled:opacity-50 min-w-[44px] flex-shrink-0"
               >
                 <RefreshCw className={`w-4 h-4 ${(loading || isRefreshing) ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">{isRefreshing ? 'Refreshing...' : 'Refresh'}</span>
               </button>
-
             </div>
           </div>
         </div>
 
         {/* Metrics Cards */}
         {metrics && (
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6 sm:mb-8">
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
-              <div className="text-purple-300 text-xs sm:text-sm mb-1">Total Validators</div>
-              <div className="text-2xl sm:text-3xl font-bold text-white">{validators.length}</div>
+          <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 md:gap-4 mb-4 sm:mb-6 md:mb-8">
+            <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-[10px] sm:text-xs md:text-sm mb-1">Total Validators</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{validators.length}</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
-              <div className="text-purple-300 text-xs sm:text-sm mb-1">Nakamoto Coefficient</div>
-              <div className="text-2xl sm:text-3xl font-bold text-white">{metrics.nakamotoCoefficient}</div>
-              <div className="text-xs text-purple-400 mt-1">Min validators for 33% stake</div>
+            <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-[10px] sm:text-xs md:text-sm mb-1">Nakamoto Coeff.</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white">{metrics.nakamotoCoefficient}</div>
+              <div className="text-[9px] sm:text-xs text-purple-400 mt-1">Min validators for 33% stake</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
-              <div className="text-purple-300 text-xs sm:text-sm mb-1">Top 10 Control</div>
-              <div className="text-2xl sm:text-3xl font-bold text-white">
+            <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-[10px] sm:text-xs md:text-sm mb-1">Top 10 Control</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                 {metrics.topValidatorConcentration.top10Percentage.toFixed(1)}%
               </div>
-              <div className="text-xs text-purple-400 mt-1\">Stake concentration</div>
+              <div className="text-[9px] sm:text-xs text-purple-400 mt-1">Stake concentration</div>
             </div>
             
-            <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
-              <div className="text-purple-300 text-xs sm:text-sm mb-1">Active Now</div>
-              <div className="text-2xl sm:text-3xl font-bold text-white">
+            <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 hover:border-purple-400/50 transition-all duration-300">
+              <div className="text-purple-300 text-[10px] sm:text-xs md:text-sm mb-1">Active Now</div>
+              <div className="text-xl sm:text-2xl md:text-3xl font-bold text-white">
                 {validators.filter(v => !v.delinquent).length}
               </div>
-              <div className="text-xs text-purple-400 mt-1">Non-delinquent</div>
+              <div className="text-[9px] sm:text-xs text-purple-400 mt-1">Non-delinquent</div>
             </div>
           </div>
         )}
 
         {/* Visualization Charts */}
         {metrics && (
-          <div className="mb-6 sm:mb-8">
-            <h2 className="text-xl sm:text-2xl font-bold text-white mb-4 flex items-center gap-2">
-              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-              Network Health Metrics
+          <div className="mb-4 sm:mb-6 md:mb-8">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4 flex items-center gap-2">
+              <Activity className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 flex-shrink-0" />
+              <span>Network Health Metrics</span>
             </h2>
             <MetricsCharts metrics={metrics} />
           </div>
         )}
 
         {/* Superteam Community Validators Section */}
-        <div className="mb-6 sm:mb-8">
+        <div className="mb-4 sm:mb-6 md:mb-8">
           <SuperteamStats {...superteamStats} />
         </div>
 
         {/* AI Recommendation Section */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-4 sm:p-6 border border-white/20 mb-6 sm:mb-8">
-          <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-4 mb-4">
-            <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2">
-              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400" />
-              AI Recommendation Engine
+        <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 mb-4 sm:mb-6 md:mb-8">
+          <div className="flex flex-col gap-3 mb-3 sm:mb-4">
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white flex items-center gap-2">
+              <TrendingUp className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 flex-shrink-0" />
+              <span>AI Recommendation Engine</span>
             </h2>
             <button
               onClick={generateAIRecommendation}
               disabled={analyzing}
-              className="w-full sm:w-auto px-4 sm:px-6 py-2 sm:py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors font-semibold text-sm sm:text-base"
+              className="w-full px-4 py-3 bg-purple-600 hover:bg-purple-700 disabled:bg-gray-600 text-white rounded-lg transition-colors font-semibold text-sm sm:text-base touch-manipulation active:scale-95"
             >
               {analyzing ? 'Analyzing...' : 'Generate Recommendation'}
             </button>
           </div>
 
           {recommendation ? (
-            <div className="space-y-4">
+            <div className="space-y-3 sm:space-y-4">
               <div className="bg-black/30 rounded-lg p-3 sm:p-4">
                 <h3 className="text-white font-semibold mb-2 text-sm sm:text-base">AI Reasoning:</h3>
-                <p className="text-purple-200 text-sm sm:text-base whitespace-pre-line">{recommendation.reasoning}</p>
-                <div className="mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
-                  <div>
+                <p className="text-purple-200 text-xs sm:text-sm leading-relaxed whitespace-pre-line">{recommendation.reasoning}</p>
+                <div className="mt-3 sm:mt-4 flex flex-col sm:flex-row gap-2 sm:gap-4 text-xs sm:text-sm">
+                  <div className="bg-white/5 rounded px-2 py-1.5">
                     <span className="text-purple-300">Confidence: </span>
                     <span className="text-white font-semibold">
                       {(recommendation.confidence * 100).toFixed(0)}%
                     </span>
                   </div>
-                  <div>
+                  <div className="bg-white/5 rounded px-2 py-1.5">
                     <span className="text-purple-300">Expected Nakamoto: </span>
                     <span className="text-white font-semibold">
                       {metrics?.nakamotoCoefficient} → {recommendation.expectedImpact.nakamotoCoefficient.projected}
@@ -514,72 +585,85 @@ export default function Home() {
                 </div>
               </div>
 
-              <h3 className="text-white font-semibold text-base sm:text-lg">Recommended Validators:</h3>
+              <h3 className="text-white font-semibold text-sm sm:text-base md:text-lg mb-2 sm:mb-3">Recommended Validators:</h3>
               <div className="grid gap-2 sm:gap-3">
                 {recommendation.validators.slice(0, 5).map((v, i) => {
                   const superteamInfo = getSuperteamValidatorInfo(v.votePubkey);
                   return (
                     <div key={i} className="bg-black/30 rounded-lg p-3 sm:p-4">
-                      <div className="flex flex-col sm:flex-row justify-between items-start gap-2 sm:gap-0 mb-2">
+                      <div className="flex flex-col gap-2 mb-2">
                         <div className="flex-1 min-w-0">
-                          <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-2 flex-wrap">
-                            {superteamInfo?.logo && <span className="text-xl">{superteamInfo.logo}</span>}
-                            {v.pubkey.slice(0, 8)}...{v.pubkey.slice(-8)}
+                          <div className="text-white font-mono text-xs sm:text-sm break-all flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                            {superteamInfo?.logo && <span className="text-lg sm:text-xl flex-shrink-0">{superteamInfo.logo}</span>}
+                            <span>{v.pubkey.slice(0, 6)}...{v.pubkey.slice(-6)}</span>
                             {isSuperteamValidator(v.votePubkey) && (
                               <SuperteamBadge size="sm" />
                             )}
                           </div>
-                          <div className="text-purple-300 text-xs sm:text-sm">
+                          <div className="text-purple-300 text-xs sm:text-sm mt-0.5">
                             {superteamInfo ? superteamInfo.name : v.name}
                           </div>
                         </div>
-                        <div className="text-left sm:text-right">
-                          <div className="text-white font-semibold text-sm sm:text-base">
-                            {Math.floor((v.currentStake || 0) / 1e9).toLocaleString()} SOL
+                        <div className="flex items-center justify-between gap-2">
+                          <div>
+                            <div className="text-white font-semibold text-sm sm:text-base">
+                              {Math.floor((v.currentStake || 0) / 1e9).toLocaleString()} SOL
+                            </div>
+                            <div className="text-purple-300 text-xs">
+                              Current stake
+                            </div>
                           </div>
-                          <div className="text-purple-300 text-xs">
-                            Current stake
-                          </div>
-                          <div className={`text-xs ${
-                            v.riskLevel === 'low' ? 'text-green-400' :
-                            v.riskLevel === 'medium' ? 'text-yellow-400' : 'text-red-400'
+                          <div className={`px-2 py-1 rounded-full text-xs font-semibold ${
+                            v.riskLevel === 'low' ? 'bg-green-500/20 text-green-400' :
+                            v.riskLevel === 'medium' ? 'bg-yellow-500/20 text-yellow-400' : 
+                            'bg-red-500/20 text-red-400'
                           }`}>
                             {v.riskLevel} risk
                           </div>
                         </div>
                       </div>
-                      <p className="text-purple-200 text-sm">{v.reason}</p>
+                      <p className="text-purple-200 text-xs sm:text-sm leading-relaxed">{v.reason}</p>
                     </div>
                   );
                 })}
               </div>
 
               {/* Voting Interface */}
-              <div className="bg-black/30 rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
-                <h3 className="text-white font-semibold mb-3 sm:mb-4 text-base sm:text-lg">Protocol Voting</h3>
-                <p className="text-purple-200 text-xs sm:text-sm mb-3 sm:mb-4 break-all">
+              <div className="bg-black/30 rounded-lg p-3 sm:p-4 md:p-6 mt-3 sm:mt-4 md:mt-6">
+                <h3 className="text-white font-semibold mb-2 sm:mb-3 text-sm sm:text-base md:text-lg">Protocol Voting</h3>
+                <p className="text-purple-200 text-xs sm:text-sm mb-3 break-all">
                   {connected 
-                    ? `Connected as ${publicKey?.toBase58().slice(0, 8)}...${publicKey?.toBase58().slice(-8)}` 
+                    ? `Connected as ${publicKey?.toBase58().slice(0, 6)}...${publicKey?.toBase58().slice(-6)}` 
                     : 'Connect your wallet to vote on this AI recommendation'}
                 </p>
                 {!connected && (
-                  <div className="mb-4 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-3 text-center">
-                    <p className="text-yellow-200 text-xs sm:text-sm flex items-center justify-center gap-2">
-                      <Wallet className="w-4 h-4" />
-                      Please connect your wallet to participate in voting
+                  <div className="mb-3 bg-yellow-500/20 border border-yellow-500/50 rounded-lg p-2.5 text-center">
+                    <p className="text-yellow-200 text-xs flex items-center justify-center gap-2">
+                      <Wallet className="w-4 h-4 flex-shrink-0" />
+                      <span>Please connect your wallet to participate in voting</span>
                     </p>
                   </div>
                 )}
-                <div className="flex flex-col sm:flex-row gap-3 sm:gap-4">
+                {voteError && (
+                  <div className="mb-3 bg-red-500/20 border border-red-500/50 rounded-lg p-2.5 text-center animate-in fade-in duration-200">
+                    <p className="text-red-200 text-xs">{voteError}</p>
+                  </div>
+                )}
+                {voteSuccess && (
+                  <div className="mb-3 bg-green-500/20 border border-green-500/50 rounded-lg p-2.5 text-center animate-in fade-in duration-200">
+                    <p className="text-green-200 text-xs">{voteSuccess}</p>
+                  </div>
+                )}
+                <div className="flex flex-col sm:flex-row gap-2 sm:gap-3">
                   <button 
                     onClick={() => handleVote('approve')}
                     disabled={!connected || userVote !== null || votingInProgress}
-                    className={`flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-semibold text-sm sm:text-base ${
+                    className={`flex-1 px-4 py-3 sm:py-3.5 rounded-lg transition-all font-semibold text-sm sm:text-base touch-manipulation active:scale-95 min-h-[44px] ${
                       userVote === 'approve' 
                         ? 'bg-green-700 text-white' 
                         : !connected || userVote !== null || votingInProgress
                         ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-green-600 hover:bg-green-700 text-white'
+                        : 'bg-green-600 hover:bg-green-700 active:bg-green-800 text-white'
                     }`}
                   >
                     ✓ Approve {userVote === 'approve' && '(Voted)'} {votingInProgress && userVote === null && '...'}
@@ -587,32 +671,27 @@ export default function Home() {
                   <button 
                     onClick={() => handleVote('reject')}
                     disabled={!connected || userVote !== null || votingInProgress}
-                    className={`flex-1 px-4 sm:px-6 py-2 sm:py-3 rounded-lg transition-colors font-semibold text-sm sm:text-base ${
+                    className={`flex-1 px-4 py-3 sm:py-3.5 rounded-lg transition-all font-semibold text-sm sm:text-base touch-manipulation active:scale-95 min-h-[44px] ${
                       userVote === 'reject' 
                         ? 'bg-red-700 text-white' 
                         : !connected || userVote !== null || votingInProgress
                         ? 'bg-gray-600 text-gray-400 cursor-not-allowed'
-                        : 'bg-red-600 hover:bg-red-700 text-white'
+                        : 'bg-red-600 hover:bg-red-700 active:bg-red-800 text-white'
                     }`}
                   >
                     ✗ Reject {userVote === 'reject' && '(Voted)'} {votingInProgress && userVote === null && '...'}
                   </button>
                 </div>
-                <div className="mt-3 sm:mt-4 text-center text-purple-300 text-xs sm:text-sm">
+                <div className="mt-3 text-center text-purple-300 text-xs sm:text-sm">
                   Current Votes: <span className="text-green-400 font-semibold">{recommendation.votes.approve} approve</span>, <span className="text-red-400 font-semibold">{recommendation.votes.reject} reject</span> ({recommendation.votes.total} total)
                 </div>
-                {userVote && (
-                  <div className="mt-3 text-center">
-                    <p className="text-green-400 text-xs sm:text-sm">✓ Your vote has been recorded in the database</p>
-                  </div>
-                )}
               </div>
 
               {/* Live Vote Feed */}
-              <div className="bg-black/30 rounded-lg p-4 sm:p-6 mt-4 sm:mt-6">
-                <h3 className="text-white font-semibold mb-3 sm:mb-4 flex flex-wrap items-center gap-2 text-sm sm:text-base">
-                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 animate-pulse" />
-                  Live Vote Stream
+              <div className="bg-black/30 rounded-lg p-3 sm:p-4 md:p-6 mt-3 sm:mt-4 md:mt-6">
+                <h3 className="text-white font-semibold mb-3 flex flex-wrap items-center gap-2 text-sm sm:text-base">
+                  <Activity className="w-4 h-4 sm:w-5 sm:h-5 text-green-400 animate-pulse flex-shrink-0" />
+                  <span>Live Vote Stream</span>
                   <span className="ml-auto text-xs text-purple-300 font-normal">Updates every 3s</span>
                 </h3>
                 <div className="space-y-2 max-h-64 overflow-y-auto">
@@ -622,22 +701,22 @@ export default function Home() {
                     recentVotes.map((vote) => (
                       <div 
                         key={vote.id} 
-                        className="bg-white/5 rounded-lg p-2 sm:p-3 flex items-center justify-between hover:bg-white/10 transition-colors gap-2"
+                        className="bg-white/5 rounded-lg p-2.5 sm:p-3 flex items-center justify-between hover:bg-white/10 transition-colors gap-2 touch-manipulation"
                       >
                         <div className="flex items-center gap-2 sm:gap-3 min-w-0 flex-1">
                           <div className={`w-2 h-2 rounded-full flex-shrink-0 ${
                             vote.voteType === 'approve' ? 'bg-green-400' : 'bg-red-400'
                           }`} />
                           <div className="min-w-0 flex-1">
-                            <div className="text-white text-xs sm:text-sm font-mono truncate">
+                            <div className="text-white text-xs font-mono truncate">
                               {vote.wallet.slice(0, 4)}...{vote.wallet.slice(-4)}
                             </div>
-                            <div className="text-purple-300 text-xs">
+                            <div className="text-purple-300 text-[10px] sm:text-xs">
                               {new Date(vote.timestamp).toLocaleTimeString()}
                             </div>
                           </div>
                         </div>
-                        <div className={`px-2 sm:px-3 py-1 rounded-full text-xs font-semibold flex-shrink-0 ${
+                        <div className={`px-2 sm:px-3 py-1 rounded-full text-[10px] sm:text-xs font-semibold flex-shrink-0 ${
                           vote.voteType === 'approve' 
                             ? 'bg-green-500/20 text-green-400' 
                             : 'bg-red-500/20 text-red-400'
@@ -663,33 +742,37 @@ export default function Home() {
         </div>
 
         {/* Superteam Community Validators */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-4 flex items-center gap-2">
-            <span>🏆 Superteam Community Validators</span>
-          </h2>
+        <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20 mb-4 sm:mb-6">
+          <div className="flex items-center gap-2 sm:gap-3 mb-3 sm:mb-4 flex-wrap">
+            <Users className="w-5 h-5 sm:w-6 sm:h-6 text-purple-400 flex-shrink-0" />
+            <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white">
+              Superteam Community Validators
+            </h2>
+            <SuperteamBadge size="md" />
+          </div>
           <div className="space-y-2">
-            {superteamValidatorsList.map((validator, index) => {
+            {superteamValidators.map((validator, index) => {
               const superteamInfo = getSuperteamValidatorInfo(validator.votePubkey);
               return (
-                <div key={validator.pubkey} className="bg-gradient-to-r from-purple-900/30 to-black/30 rounded-lg p-4 flex items-center justify-between border border-purple-500/20">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
-                    <div>
-                      <div className="text-white font-mono text-sm flex items-center gap-2">
-                        {superteamInfo?.logo && <span className="text-2xl">{superteamInfo.logo}</span>}
-                        {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
+                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4 border border-purple-500/30">
+                  <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
+                    <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-400 flex-shrink-0">#{index + 1}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-white font-mono text-xs sm:text-sm flex items-center gap-1.5 sm:gap-2 flex-wrap">
+                        {superteamInfo?.logo && <span className="text-lg sm:text-xl md:text-2xl flex-shrink-0">{superteamInfo.logo}</span>}
+                        <span className="break-all">{validator.pubkey.slice(0, 6)}...{validator.pubkey.slice(-6)}</span>
                         <SuperteamBadge size="sm" />
                       </div>
-                      <div className="text-purple-300 text-xs">
+                      <div className="text-purple-300 text-xs sm:text-sm mt-0.5">
                         {superteamInfo ? superteamInfo.name : validator.name}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-semibold">
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {Math.floor(validator.activatedStake / 1e9).toLocaleString()} SOL
                     </div>
-                    <div className="text-purple-300 text-sm">
+                    <div className="text-purple-300 text-xs sm:text-sm">
                       {validator.stakePercentage.toFixed(3)}% of network
                     </div>
                   </div>
@@ -699,31 +782,31 @@ export default function Home() {
           </div>
         </div>
 
-        {/* All Other Validators */}
-        <div className="bg-white/10 backdrop-blur-lg rounded-xl p-6 border border-white/20">
-          <h2 className="text-2xl font-bold text-white mb-4">
-            All Other Validators
+        {/* Other Solana Validators */}
+        <div className="bg-white/10 backdrop-blur-lg rounded-lg sm:rounded-xl p-3 sm:p-4 md:p-6 border border-white/20">
+          <h2 className="text-lg sm:text-xl md:text-2xl font-bold text-white mb-3 sm:mb-4">
+            Solana Validators by Stake
           </h2>
           <div className="space-y-2">
-            {otherValidatorsList.slice(0, 10).map((validator, index) => {
+            {otherValidators.slice(0, 10).map((validator, index) => {
               return (
-                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-4 flex items-center justify-between">
-                  <div className="flex items-center gap-4">
-                    <div className="text-2xl font-bold text-purple-400">#{index + 1}</div>
-                    <div>
-                      <div className="text-white font-mono text-sm">
-                        {validator.pubkey.slice(0, 8)}...{validator.pubkey.slice(-8)}
+                <div key={validator.pubkey} className="bg-black/30 rounded-lg p-3 sm:p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-2 sm:gap-4">
+                  <div className="flex items-center gap-2 sm:gap-3 md:gap-4 min-w-0 flex-1">
+                    <div className="text-lg sm:text-xl md:text-2xl font-bold text-purple-400 flex-shrink-0">#{index + 1}</div>
+                    <div className="min-w-0 flex-1">
+                      <div className="text-white font-mono text-xs sm:text-sm flex items-center gap-2">
+                        <span className="break-all">{validator.pubkey.slice(0, 6)}...{validator.pubkey.slice(-6)}</span>
                       </div>
-                      <div className="text-purple-300 text-xs">
+                      <div className="text-purple-300 text-xs sm:text-sm mt-0.5">
                         {validator.name}
                       </div>
                     </div>
                   </div>
-                  <div className="text-right">
-                    <div className="text-white font-semibold">
+                  <div className="text-left sm:text-right flex-shrink-0">
+                    <div className="text-white font-semibold text-sm sm:text-base">
                       {Math.floor(validator.activatedStake / 1e9).toLocaleString()} SOL
                     </div>
-                    <div className="text-purple-300 text-sm">
+                    <div className="text-purple-300 text-xs sm:text-sm">
                       {validator.stakePercentage.toFixed(3)}% of network
                     </div>
                   </div>
